@@ -1,0 +1,5355 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport"
+    content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no" />
+  <meta name="theme-color" content="#f5f7fa" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <title>Faculty Worksheet System</title>
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    html {
+      font-size: 16px;
+      -webkit-text-size-adjust: 100%
+    }
+
+    :root {
+      --bg: #f5f7fa;
+      --surface: #ffffff;
+      --surface2: #f0f2f5;
+      --surface3: #e8ebf0;
+      --border: #d1d5db;
+      --gold: #b8860b;
+      --gold2: #996f09;
+      --gold-dim: rgba(184, 134, 11, .1);
+      --gold-glow: rgba(184, 134, 11, .2);
+      --green: #16a34a;
+      --green-dim: rgba(22, 163, 74, .1);
+      --red: #dc2626;
+      --red-dim: rgba(220, 38, 38, .1);
+      --blue: #2563eb;
+      --blue-dim: rgba(37, 99, 235, .1);
+      --orange: #ea580c;
+      --orange-dim: rgba(234, 88, 12, .1);
+      --text: #1e293b;
+      --muted: #6b7280;
+      --muted2: #4b5563;
+      --white: #ffffff;
+      --r: 10px;
+      --r2: 6px;
+      --t: .18s ease;
+      --shadow: 0 1px 3px rgba(0, 0, 0, .08), 0 1px 2px rgba(0, 0, 0, .06);
+      --safe-b: env(safe-area-inset-bottom, 0px);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch
+    }
+
+    @media print {
+      .no-print {
+        display: none !important
+      }
+
+      body {
+        background: #fff;
+        color: #000
+      }
+
+      table {
+        border-collapse: collapse;
+        width: 100%
+      }
+
+      th,
+      td {
+        border: 1px solid #ccc;
+        padding: 6px 10px;
+        font-size: 11px
+      }
+
+      th {
+        background: #1e3a5f;
+        color: #f0a500
+      }
+    }
+
+    .page-hdr {
+      background: var(--surface);
+      border-bottom: 2px solid var(--gold);
+      padding: 14px 20px;
+      padding-top: max(14px, env(safe-area-inset-top));
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, .06)
+    }
+
+    .hdr-left h1 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #1e293b;
+      letter-spacing: .02em
+    }
+
+    .hdr-left p {
+      font-size: .72rem;
+      color: var(--muted);
+      margin-top: 1px
+    }
+
+    .hdr-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap
+    }
+
+    .date-badge {
+      background: var(--gold-dim);
+      border: 1px solid rgba(184, 134, 11, .3);
+      border-radius: 999px;
+      padding: 5px 14px;
+      font-size: .78rem;
+      font-weight: 700;
+      color: var(--gold);
+      white-space: nowrap
+    }
+
+    .sheet-badge {
+      background: var(--blue-dim);
+      border: 1px solid rgba(37, 99, 235, .3);
+      border-radius: 999px;
+      padding: 5px 14px;
+      font-size: .78rem;
+      font-weight: 700;
+      color: var(--blue);
+      white-space: nowrap
+    }
+
+    .admin-badge {
+      background: var(--green-dim);
+      border: 1px solid rgba(22, 163, 74, .3);
+      border-radius: 999px;
+      padding: 5px 14px;
+      font-size: .72rem;
+      font-weight: 700;
+      color: var(--green);
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all var(--t);
+      min-height: 44px;
+      display: none;
+      align-items: center;
+      justify-content: center
+    }
+
+    .admin-badge:hover {
+      background: rgba(22, 163, 74, .18)
+    }
+
+    .tabs {
+      display: flex;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 57px;
+      z-index: 199;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch
+    }
+
+    .tabs::-webkit-scrollbar {
+      display: none
+    }
+
+    .tab {
+      flex: 0 0 auto;
+      padding: 12px 18px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-size: .83rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      white-space: nowrap;
+      transition: all var(--t);
+      min-height: 44px;
+      -webkit-tap-highlight-color: transparent
+    }
+
+    .tab:hover {
+      color: var(--text)
+    }
+
+    .tab.on {
+      color: var(--gold);
+      border-bottom-color: var(--gold);
+      background: var(--gold-dim)
+    }
+
+    .tab .lock-ico {
+      font-size: .68rem;
+      margin-left: 4px;
+      opacity: .6
+    }
+
+    .wrap {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 20px 16px 80px;
+      padding-bottom: max(80px, calc(80px + var(--safe-b)))
+    }
+
+    .panel {
+      display: none
+    }
+
+    .panel.on {
+      display: block;
+      animation: fadeUp .2s ease
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow)
+    }
+
+    .card-title {
+      font-size: .72rem;
+      font-weight: 800;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    .card-title .ico {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      background: var(--gold-dim);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .9rem
+    }
+
+    .field {
+      margin-bottom: 16px
+    }
+
+    .lbl {
+      font-size: .7rem;
+      font-weight: 700;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+      color: var(--muted2);
+      margin-bottom: 6px
+    }
+
+    .sel-wrap {
+      position: relative
+    }
+
+    .sel-wrap::after {
+      content: '▾';
+      position: absolute;
+      right: 13px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--gold);
+      pointer-events: none;
+      font-size: .9rem
+    }
+
+    select {
+      width: 100%;
+      appearance: none;
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r2);
+      color: var(--text);
+      font-size: 16px;
+      padding: 12px 38px 12px 13px;
+      outline: none;
+      transition: border-color var(--t), box-shadow var(--t);
+      min-height: 48px
+    }
+
+    select:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px var(--gold-glow)
+    }
+
+    select option {
+      background: var(--surface)
+    }
+
+    .input-field {
+      width: 100%;
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r2);
+      color: var(--text);
+      font-size: 16px;
+      padding: 12px 13px;
+      outline: none;
+      transition: border-color var(--t), box-shadow var(--t);
+      min-height: 48px
+    }
+
+    .input-field:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px var(--gold-glow)
+    }
+
+    .input-field::placeholder {
+      color: var(--muted)
+    }
+
+    input[type="date"] {
+      color-scheme: light
+    }
+
+    .st-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px
+    }
+
+    .st-btn {
+      padding: 14px;
+      border-radius: var(--r2);
+      border: 1.5px solid var(--border);
+      background: var(--surface2);
+      color: var(--muted);
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all var(--t);
+      text-align: center;
+      min-height: 52px;
+      -webkit-tap-highlight-color: transparent
+    }
+
+    .st-btn:hover {
+      border-color: var(--muted2);
+      color: var(--text)
+    }
+
+    .st-btn:active {
+      transform: scale(.97)
+    }
+
+    .st-btn.sp {
+      border-color: var(--green);
+      background: var(--green-dim);
+      color: var(--green)
+    }
+
+    .st-btn.sa {
+      border-color: var(--red);
+      background: var(--red-dim);
+      color: var(--red)
+    }
+
+    .alert {
+      border-radius: var(--r2);
+      padding: 11px 14px;
+      font-size: .83rem;
+      margin-bottom: 14px;
+      display: none
+    }
+
+    .alert.inf {
+      background: var(--gold-dim);
+      border: 1px solid rgba(184, 134, 11, .3);
+      color: #92400e
+    }
+
+    .alert.wrn {
+      background: var(--red-dim);
+      border: 1px solid rgba(220, 38, 38, .3);
+      color: #991b1b
+    }
+
+    .alert.leave {
+      background: var(--orange-dim);
+      border: 1px solid rgba(234, 88, 12, .3);
+      color: #9a3412
+    }
+
+    #slotsWrap {
+      display: none;
+      animation: fadeUp .2s ease
+    }
+
+    .slots-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px
+    }
+
+    @media(min-width:480px) {
+      .slots-grid {
+        grid-template-columns: repeat(3, 1fr)
+      }
+    }
+
+    @media(min-width:640px) {
+      .slots-grid {
+        grid-template-columns: repeat(4, 1fr)
+      }
+    }
+
+    .slot-card {
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r);
+      padding: 12px 14px;
+      transition: border-color var(--t), box-shadow var(--t)
+    }
+
+    .slot-card:focus-within {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px var(--gold-glow)
+    }
+
+    .slot-time {
+      font-size: .7rem;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px
+    }
+
+    .slot-time::before {
+      content: '';
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--gold);
+      opacity: .5
+    }
+
+    .slot-card textarea,
+    .slot-card input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      border-bottom: 1.5px solid var(--border);
+      color: var(--text);
+      font-size: 16px;
+      padding: 8px 0;
+      outline: none;
+      transition: border-color var(--t);
+      min-height: 36px;
+      font-family: inherit;
+      resize: none;
+      line-height: 1.4
+    }
+
+    .slot-card textarea:focus,
+    .slot-card input:focus {
+      border-bottom-color: var(--gold)
+    }
+
+    .slot-card textarea::placeholder,
+    .slot-card input::placeholder {
+      color: var(--muted);
+      font-size: .82rem
+    }
+
+    .btn {
+      width: 100%;
+      margin-top: 18px;
+      padding: 14px;
+      border: none;
+      border-radius: var(--r2);
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all var(--t);
+      letter-spacing: .03em;
+      min-height: 52px;
+      -webkit-tap-highlight-color: transparent
+    }
+
+    .btn-gold {
+      background: var(--gold);
+      color: #fff
+    }
+
+    .btn-gold:hover:not(:disabled) {
+      background: var(--gold2);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px var(--gold-glow)
+    }
+
+    .btn-gold:active:not(:disabled) {
+      transform: scale(.98)
+    }
+
+    .btn-gold:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+      transform: none
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1.5px solid var(--gold);
+      color: var(--gold);
+      padding: 10px 18px;
+      width: auto;
+      margin-top: 0;
+      font-size: .82rem;
+      min-height: 48px;
+      -webkit-tap-highlight-color: transparent
+    }
+
+    .btn-outline:hover {
+      background: var(--gold-dim)
+    }
+
+    .btn-outline:active {
+      transform: scale(.97)
+    }
+
+    .btn-sm {
+      padding: 8px 14px;
+      width: auto;
+      margin-top: 0;
+      font-size: .78rem;
+      border-radius: var(--r2);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      cursor: pointer;
+      transition: all var(--t);
+      min-height: 44px;
+      -webkit-tap-highlight-color: transparent
+    }
+
+    .btn-sm:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+      background: var(--gold-dim)
+    }
+
+    .btn-sm:active {
+      transform: scale(.96)
+    }
+
+    .btn-sm.active-f {
+      border-color: var(--gold);
+      color: var(--gold);
+      background: var(--gold-dim)
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 18px
+    }
+
+    @media(max-width:480px) {
+      .stats {
+        grid-template-columns: repeat(2, 1fr)
+      }
+    }
+
+    @media(min-width:640px) {
+      .stats {
+        grid-template-columns: repeat(6, 1fr)
+      }
+    }
+
+    .stat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 14px 8px;
+      text-align: center;
+      box-shadow: var(--shadow)
+    }
+
+    .stat-n {
+      font-size: 1.65rem;
+      font-weight: 900;
+      color: var(--gold);
+      line-height: 1
+    }
+
+    .stat-l {
+      font-size: .62rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-top: 4px
+    }
+
+    .tbl-wrap {
+      overflow-x: auto;
+      border-radius: var(--r);
+      border: 1px solid var(--border);
+      -webkit-overflow-scrolling: touch
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .83rem;
+      min-width: 320px
+    }
+
+    thead tr {
+      background: var(--surface2)
+    }
+
+    th {
+      padding: 10px 12px;
+      text-align: left;
+      color: var(--gold);
+      font-size: .68rem;
+      font-weight: 800;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+      white-space: nowrap
+    }
+
+    td {
+      padding: 10px 12px;
+      border-top: 1px solid var(--border);
+      color: var(--text)
+    }
+
+    tbody tr {
+      transition: background var(--t)
+    }
+
+    tbody tr:hover td {
+      background: rgba(0, 0, 0, .02)
+    }
+
+    tbody tr:active td {
+      background: rgba(0, 0, 0, .04)
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-size: .68rem;
+      font-weight: 800
+    }
+
+    .pp {
+      background: var(--green-dim);
+      color: var(--green)
+    }
+
+    .pa {
+      background: var(--red-dim);
+      color: var(--red)
+    }
+
+    .pu {
+      background: rgba(107, 114, 128, .12);
+      color: var(--muted)
+    }
+
+    .pw {
+      background: rgba(234, 88, 12, .1);
+      color: #ea580c
+    }
+
+    .pl {
+      background: var(--orange-dim);
+      color: var(--orange)
+    }
+
+    .pdf-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 16px
+    }
+
+    .btn-pdf {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 16px;
+      border-radius: var(--r2);
+      background: var(--red-dim);
+      border: 1.5px solid var(--red);
+      color: var(--red);
+      font-size: .82rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all var(--t);
+      min-height: 44px;
+      -webkit-tap-highlight-color: transparent
+    }
+
+    .btn-pdf:hover {
+      background: rgba(220, 38, 38, .18)
+    }
+
+    .btn-csv2 {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 16px;
+      border-radius: var(--r2);
+      background: var(--green-dim);
+      border: 1.5px solid var(--green);
+      color: var(--green);
+      font-size: .82rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all var(--t);
+      min-height: 44px;
+      -webkit-tap-highlight-color: transparent
+    }
+
+    .btn-csv2:hover {
+      background: rgba(22, 163, 74, .18)
+    }
+
+    .login-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, .88);
+      backdrop-filter: blur(8px);
+      z-index: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn .2s ease;
+      padding: 16px
+    }
+
+    .login-card {
+      background: var(--surface);
+      border: 1px solid var(--gold);
+      border-radius: var(--r);
+      padding: 32px 28px;
+      width: 90%;
+      max-width: 380px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, .12);
+      animation: scaleIn .2s ease
+    }
+
+    .login-card h2 {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--gold);
+      text-align: center;
+      margin-bottom: 6px
+    }
+
+    .login-card p {
+      font-size: .78rem;
+      color: var(--muted);
+      text-align: center;
+      margin-bottom: 22px
+    }
+
+    .login-error {
+      background: var(--red-dim);
+      border: 1px solid rgba(220, 38, 38, .3);
+      border-radius: var(--r2);
+      padding: 9px 12px;
+      font-size: .8rem;
+      color: #991b1b;
+      text-align: center;
+      margin-bottom: 14px;
+      display: none
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: var(--r2);
+      background: var(--gold);
+      color: #fff;
+      font-size: .95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all var(--t);
+      letter-spacing: .03em;
+      min-height: 48px;
+      -webkit-tap-highlight-color: transparent
+    }
+
+    .login-btn:hover {
+      background: var(--gold2);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px var(--gold-glow)
+    }
+
+    .login-btn:active {
+      transform: scale(.98)
+    }
+
+    .login-btn:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+      transform: none
+    }
+
+    .login-back {
+      display: block;
+      text-align: center;
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: .78rem;
+      cursor: pointer;
+      background: none;
+      border: none;
+      transition: color var(--t);
+      min-height: 44px;
+      line-height: 44px;
+      -webkit-tap-highlight-color: transparent
+    }
+
+    .login-back:hover {
+      color: var(--gold)
+    }
+
+    .forgot-link {
+      display: block;
+      text-align: center;
+      margin-top: 12px;
+      color: var(--blue);
+      font-size: .78rem;
+      cursor: pointer;
+      background: none;
+      border: none;
+      transition: color var(--t);
+      -webkit-tap-highlight-color: transparent;
+      text-decoration: underline;
+      text-underline-offset: 2px
+    }
+
+    .forgot-link:hover {
+      color: var(--gold)
+    }
+
+    .welcome-bar {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: var(--surface);
+      border: 1px solid var(--green);
+      border-radius: var(--r);
+      padding: 14px 18px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow)
+    }
+
+    .welcome-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--gold-dim);
+      border: 2px solid var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--gold);
+      flex-shrink: 0
+    }
+
+    .welcome-info {
+      flex: 1;
+      min-width: 0
+    }
+
+    .welcome-info h3 {
+      font-size: .92rem;
+      font-weight: 700;
+      color: var(--text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap
+    }
+
+    .welcome-info p {
+      font-size: .7rem;
+      color: var(--muted);
+      margin-top: 2px
+    }
+
+    .btn-logout {
+      padding: 7px 14px;
+      border-radius: var(--r2);
+      background: var(--red-dim);
+      border: 1.5px solid var(--red);
+      color: var(--red);
+      font-size: .75rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all var(--t);
+      white-space: nowrap;
+      min-height: 44px;
+      -webkit-tap-highlight-color: transparent
+    }
+
+    .btn-logout:hover {
+      background: rgba(220, 38, 38, .18)
+    }
+
+    #loader {
+      text-align: center;
+      padding: 70px 20px;
+      color: var(--muted)
+    }
+
+    .big-spin {
+      width: 42px;
+      height: 42px;
+      border: 3px solid var(--border);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin .9s linear infinite;
+      margin: 0 auto 14px
+    }
+
+    #toast {
+      position: fixed;
+      bottom: 22px;
+      bottom: max(22px, calc(22px + var(--safe-b)));
+      left: 50%;
+      transform: translateX(-50%) translateY(90px);
+      padding: 11px 22px;
+      border-radius: 999px;
+      font-size: .87rem;
+      font-weight: 700;
+      white-space: nowrap;
+      z-index: 9999;
+      pointer-events: none;
+      transition: transform .28s cubic-bezier(.34, 1.56, .64, 1);
+      max-width: calc(100vw - 32px);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      will-change: transform
+    }
+
+    #toast.show {
+      transform: translateX(-50%) translateY(0)
+    }
+
+    #toast.ok {
+      background: #dcfce7;
+      color: #166534;
+      border: 1px solid var(--green)
+    }
+
+    #toast.er {
+      background: #fef2f2;
+      color: #991b1b;
+      border: 1px solid var(--red)
+    }
+
+    #toast.in {
+      background: #fef9c3;
+      color: #854d0e;
+      border: 1px solid var(--gold)
+    }
+
+    .spin-sm {
+      display: inline-block;
+      width: 15px;
+      height: 15px;
+      border: 2px solid rgba(255, 255, 255, .3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px
+    }
+
+    .reset-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, .88);
+      backdrop-filter: blur(8px);
+      z-index: 500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn .2s ease;
+      padding: 16px
+    }
+
+    .reset-overlay.on {
+      display: flex
+    }
+
+    /* ── Monthly Report Grid ── */
+    .mo-wrap {
+      overflow: auto;
+      border-radius: var(--r);
+      border: 1px solid var(--border);
+      margin-bottom: 16px;
+      -webkit-overflow-scrolling: touch;
+      position: relative
+    }
+
+    .mo-tbl {
+      border-collapse: collapse;
+      font-size: .72rem;
+      white-space: nowrap
+    }
+
+    .mo-tbl th,
+    .mo-tbl td {
+      padding: 6px 8px;
+      border: 1px solid var(--border);
+      text-align: center;
+      min-width: 38px
+    }
+
+    .mo-tbl thead th {
+      background: var(--surface2);
+      color: var(--gold);
+      font-size: .6rem;
+      font-weight: 800;
+      letter-spacing: .05em;
+      position: sticky;
+      top: 0;
+      z-index: 2
+    }
+
+    .mo-tbl thead th.mo-name {
+      position: sticky;
+      left: 0;
+      z-index: 3;
+      background: var(--surface2);
+      text-align: left;
+      min-width: 140px
+    }
+
+    .mo-tbl tbody td.mo-name {
+      position: sticky;
+      left: 0;
+      z-index: 1;
+      background: var(--surface);
+      text-align: left;
+      font-weight: 700;
+      font-size: .74rem;
+      color: var(--text);
+      min-width: 140px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 160px
+    }
+
+    .mo-tbl tbody td.mo-name:hover {
+      overflow: visible;
+      white-space: normal
+    }
+
+    .mo-tbl .sun-col {
+      background: #fef2f2 !important;
+      color: #dc2626 !important
+    }
+
+    .mo-tbl .leave-col {
+      background: #fff7ed !important;
+      color: #ea580c !important
+    }
+
+    .mo-cell-p {
+      background: var(--green-dim);
+      color: var(--green);
+      font-weight: 700;
+      border-radius: 3px;
+      cursor: pointer
+    }
+
+    .mo-cell-a {
+      background: var(--red-dim);
+      color: var(--red);
+      font-weight: 700;
+      border-radius: 3px;
+      cursor: default
+    }
+
+    .mo-cell-e {
+      color: var(--muted);
+      cursor: default
+    }
+
+    .mo-cell-nm {
+      color: var(--red);
+      font-weight: 800;
+      font-size: .9rem;
+      cursor: default
+    }
+
+    .mo-cell-partial {
+      background: rgba(234, 88, 12, .1);
+      color: #ea580c;
+      font-weight: 700;
+      font-size: .6rem;
+      border-radius: 3px;
+      cursor: pointer
+    }
+
+    .mo-tbl tfoot td {
+      background: var(--surface2);
+      font-weight: 800;
+      color: var(--gold);
+      font-size: .68rem
+    }
+
+    .mo-tbl tfoot td.mo-name {
+      position: sticky;
+      left: 0;
+      z-index: 1;
+      background: var(--surface2);
+      text-align: left
+    }
+
+    .mo-legend {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+      font-size: .72rem;
+      color: var(--muted)
+    }
+
+    .mo-legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px
+    }
+
+    .mo-legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      display: inline-block
+    }
+
+    .mo-legend-cross {
+      color: var(--red);
+      font-weight: 800;
+      font-size: .9rem;
+      display: inline-block;
+      line-height: 1
+    }
+
+    /* ── Floating Tooltip (fixed positioning for no clipping) ── */
+    #moTooltip {
+      display: none;
+      position: fixed;
+      background: var(--surface);
+      border: 1.5px solid var(--gold);
+      border-radius: 8px;
+      padding: 10px 12px;
+      z-index: 1000;
+      min-width: 180px;
+      max-width: 260px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .12);
+      pointer-events: none;
+      white-space: normal
+    }
+
+    #moTooltip .mo-tip-title {
+      font-size: .7rem;
+      font-weight: 800;
+      color: var(--gold);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 4px
+    }
+
+    #moTooltip .mo-tip-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: .68rem;
+      padding: 3px 0;
+      border-bottom: 1px solid rgba(0, 0, 0, .04)
+    }
+
+    #moTooltip .mo-tip-row:last-child {
+      border-bottom: none
+    }
+
+    #moTooltip .mo-tip-slot {
+      color: var(--muted);
+      flex-shrink: 0;
+      margin-right: 10px
+    }
+
+    #moTooltip .mo-tip-val {
+      color: var(--text);
+      font-weight: 600;
+      max-width: 140px;
+      word-break: break-word;
+      text-align: right
+    }
+
+    #moTooltip .mo-tip-empty {
+      color: var(--muted);
+      font-style: italic
+    }
+
+    /* ── Toggle Buttons (Daily / Monthly) ── */
+    .view-toggle {
+      display: flex;
+      gap: 0;
+      border-radius: var(--r2);
+      overflow: hidden;
+      border: 1.5px solid var(--border);
+      margin-bottom: 16px
+    }
+
+    .view-toggle button {
+      flex: 1;
+      padding: 10px 16px;
+      border: none;
+      background: var(--surface2);
+      color: var(--muted);
+      font-size: .82rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all var(--t);
+      min-height: 42px;
+      -webkit-tap-highlight-color: transparent
+    }
+
+    .view-toggle button.active {
+      background: var(--gold-dim);
+      color: var(--gold)
+    }
+
+    /* ── Faculty Summary Table ── */
+    .summary-tbl {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .82rem
+    }
+
+    .summary-tbl th {
+      padding: 10px 12px;
+      text-align: left;
+      color: var(--gold);
+      font-size: .68rem;
+      font-weight: 800;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+      background: var(--surface2);
+      white-space: nowrap
+    }
+
+    .summary-tbl td {
+      padding: 9px 12px;
+      border-top: 1px solid var(--border);
+      color: var(--text)
+    }
+
+    .summary-tbl tbody tr:hover td {
+      background: rgba(0, 0, 0, .02)
+    }
+
+    .summary-tbl .num {
+      text-align: center;
+      font-weight: 700;
+      font-size: .9rem
+    }
+
+    .daily-comer-badge {
+      display: inline-block;
+      background: rgba(234, 179, 8, .12);
+      border: 1px solid rgba(234, 179, 8, .4);
+      color: #a16207;
+      font-size: .68rem;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 999px;
+      white-space: nowrap
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg)
+      }
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0
+      }
+
+      to {
+        opacity: 1
+      }
+    }
+
+    @keyframes scaleIn {
+      from {
+        opacity: 0;
+        transform: scale(.95)
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1)
+      }
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-16px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    /* ═══ WHAT'S NEW / CHANGELOG POPUP ═══ */
+    .wn-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(30, 41, 59, .55);
+      backdrop-filter: blur(10px);
+      z-index: 600;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn .25s ease;
+      padding: 16px
+    }
+
+    .wn-overlay.on {
+      display: flex
+    }
+
+    .wn-card {
+      background: var(--surface);
+      border: 1.5px solid var(--gold);
+      border-radius: 14px;
+      padding: 28px 24px;
+      width: 92%;
+      max-width: 440px;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, .18);
+      animation: scaleIn .25s ease
+    }
+
+    .wn-card h2 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--gold);
+      text-align: center;
+      margin-bottom: 4px
+    }
+
+    .wn-card .wn-ver {
+      font-size: .7rem;
+      color: var(--muted);
+      text-align: center;
+      margin-bottom: 18px;
+      letter-spacing: .04em
+    }
+
+    .wn-list {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 18px
+    }
+
+    .wn-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: .84rem;
+      color: var(--text);
+      line-height: 1.5
+    }
+
+    .wn-list li:last-child {
+      border-bottom: none
+    }
+
+    .wn-list .wn-emoji {
+      font-size: 1.1rem;
+      flex-shrink: 0;
+      margin-top: 1px
+    }
+
+    .wn-list .wn-text b {
+      color: var(--gold);
+      font-weight: 700
+    }
+
+    .wn-dismiss {
+      width: 100%;
+      padding: 13px;
+      border: none;
+      border-radius: var(--r2);
+      background: var(--gold);
+      color: #fff;
+      font-size: .92rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all var(--t);
+      letter-spacing: .03em;
+      min-height: 46px
+    }
+
+    .wn-dismiss:hover {
+      background: var(--gold2);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px var(--gold-glow)
+    }
+
+    .wn-dismiss:active {
+      transform: scale(.98)
+    }
+
+    /* ═══ MISSED DATES REMINDER POPUP ═══ */
+    .missed-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(30, 41, 59, .5);
+      backdrop-filter: blur(8px);
+      z-index: 550;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn .25s ease;
+      padding: 16px
+    }
+
+    .missed-overlay.on {
+      display: flex
+    }
+
+    .missed-card {
+      background: var(--surface);
+      border: 1.5px solid var(--orange);
+      border-radius: 14px;
+      padding: 28px 24px;
+      width: 92%;
+      max-width: 440px;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, .16);
+      animation: slideDown .3s ease
+    }
+
+    .missed-card h2 {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--orange);
+      text-align: center;
+      margin-bottom: 4px
+    }
+
+    .missed-card .missed-sub {
+      font-size: .78rem;
+      color: var(--muted);
+      text-align: center;
+      margin-bottom: 16px
+    }
+
+    .missed-dates-list {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 18px
+    }
+
+    .missed-dates-list li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 9px 12px;
+      border-radius: var(--r2);
+      margin-bottom: 6px;
+      background: var(--orange-dim);
+      border: 1px solid rgba(234, 88, 12, .2);
+      font-size: .82rem;
+      cursor: pointer;
+      transition: all var(--t)
+    }
+
+    .missed-dates-list li:hover {
+      border-color: var(--orange);
+      background: rgba(234, 88, 12, .15)
+    }
+
+    .missed-dates-list .missed-date {
+      font-weight: 700;
+      color: var(--text)
+    }
+
+    .missed-dates-list .missed-day {
+      font-size: .72rem;
+      color: var(--muted)
+    }
+
+    .missed-dates-list .missed-action {
+      font-size: .68rem;
+      font-weight: 700;
+      color: var(--orange);
+      text-transform: uppercase;
+      letter-spacing: .06em
+    }
+
+    .missed-dismiss {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: var(--r2);
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      color: var(--text);
+      font-size: .88rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all var(--t);
+      min-height: 44px
+    }
+
+    .missed-dismiss:hover {
+      border-color: var(--orange);
+      color: var(--orange);
+      background: var(--orange-dim)
+    }
+
+    /* ═══ REPORT MISSING POPUP ═══ */
+    .report-missing-card {
+      border-color: var(--blue)
+    }
+
+    .report-missing-card h2 {
+      color: var(--blue)
+    }
+
+    .report-missing-card .missed-dates-list li {
+      cursor: default
+    }
+
+    .report-missing-card .missed-dates-list li {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 4px
+    }
+
+    .report-missing-card .report-missing-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      width: 100%
+    }
+
+    .report-missing-card .missed-meta {
+      font-size: .7rem;
+      color: var(--muted);
+      line-height: 1.4
+    }
+
+    .report-missing-card .missed-date {
+      color: var(--blue)
+    }
+
+    .report-missing-card .report-missing-name {
+      font-weight: 700;
+      color: var(--text)
+    }
+
+    .missed-copy {
+      width: 100%;
+      padding: 12px;
+      border: 1.5px solid var(--blue);
+      border-radius: var(--r2);
+      background: var(--blue-dim);
+      color: var(--blue);
+      font-size: .88rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all var(--t);
+      min-height: 44px
+    }
+
+    .missed-copy:hover {
+      background: rgba(37, 99, 235, .16)
+    }
+
+    /* ═══ FEEDBACK CARD ═══ */
+    .fb-textarea {
+      width: 100%;
+      min-height: 90px;
+      max-height: 200px;
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r2);
+      color: var(--text);
+      font-size: 15px;
+      padding: 12px;
+      outline: none;
+      resize: vertical;
+      font-family: inherit;
+      transition: border-color var(--t), box-shadow var(--t);
+      line-height: 1.5
+    }
+
+    .fb-textarea:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px var(--gold-glow)
+    }
+
+    .fb-textarea::placeholder {
+      color: var(--muted);
+      font-size: .82rem
+    }
+
+    .fb-success {
+      display: none;
+      background: var(--green-dim);
+      border: 1px solid rgba(22, 163, 74, .3);
+      border-radius: var(--r2);
+      padding: 10px 14px;
+      font-size: .82rem;
+      color: #166534;
+      text-align: center;
+      margin-top: 10px
+    }
+
+    /* ═══ MOBILE OVERRIDES — AMP-style for easy faculty writing ═══ */
+    @media(max-width:600px) {
+
+      /* ── Global spacing & sizing ── */
+      html {
+        font-size: 15px
+      }
+
+      .wrap {
+        padding: 12px 10px 100px;
+        padding-bottom: max(100px, calc(100px + var(--safe-b)))
+      }
+
+      /* ── Header compaction ── */
+      .page-hdr {
+        padding: 10px 12px;
+        padding-top: max(10px, env(safe-area-inset-top));
+        gap: 6px
+      }
+
+      .hdr-left h1 {
+        font-size: .92rem
+      }
+
+      .hdr-left p {
+        font-size: .65rem
+      }
+
+      .hdr-right {
+        gap: 5px
+      }
+
+      .date-badge,
+      .sheet-badge {
+        padding: 3px 8px;
+        font-size: .64rem
+      }
+
+      .admin-badge {
+        font-size: .64rem;
+        padding: 3px 8px;
+        min-height: 36px
+      }
+
+      /* ── Tabs — scrollable pill-style ── */
+      .tabs {
+        gap: 0;
+        padding: 0
+      }
+
+      .tab {
+        flex: 1 1 0;
+        padding: 11px 6px;
+        font-size: .82rem;
+        text-align: center;
+        min-height: 46px
+      }
+
+      /* ── Cards — slightly less padding ── */
+      .card {
+        padding: 14px 12px;
+        margin-bottom: 12px;
+        border-radius: 12px
+      }
+
+      .card-title {
+        font-size: .68rem;
+        margin-bottom: 10px
+      }
+
+      /* ── Form fields — larger on mobile ── */
+      .field {
+        margin-bottom: 14px
+      }
+
+      .lbl {
+        font-size: .68rem;
+        margin-bottom: 5px
+      }
+
+      select {
+        font-size: 16px;
+        padding: 14px 40px 14px 14px;
+        min-height: 52px;
+        border-radius: 10px
+      }
+
+      .input-field {
+        font-size: 16px;
+        padding: 14px;
+        min-height: 52px;
+        border-radius: 10px
+      }
+
+      /* ── Attendance buttons — bigger for fat fingers ── */
+      .st-row {
+        gap: 8px
+      }
+
+      .st-btn {
+        padding: 16px 12px;
+        font-size: 1.05rem;
+        min-height: 56px;
+        border-radius: 10px
+      }
+
+      /* ── SLOTS — single column, full-width, larger inputs for writing ── */
+      .slots-grid {
+        grid-template-columns: 1fr !important;
+        gap: 8px
+      }
+
+      .slot-card {
+        padding: 14px 16px;
+        border-radius: 12px
+      }
+
+      .slot-time {
+        font-size: .72rem;
+        margin-bottom: 6px
+      }
+
+      .slot-card textarea,
+      .slot-card input {
+        font-size: 16px;
+        padding: 10px 0;
+        min-height: 40px
+      }
+
+      .slot-card textarea::placeholder,
+      .slot-card input::placeholder {
+        font-size: .82rem
+      }
+
+      /* ── Submit button — sticky at bottom ── */
+      #btnSubmit {
+        position: sticky;
+        bottom: 12px;
+        bottom: max(12px, calc(12px + var(--safe-b)));
+        z-index: 100;
+        margin-top: 14px;
+        border-radius: 14px;
+        font-size: 1.05rem;
+        min-height: 54px;
+        box-shadow: 0 -4px 20px rgba(184, 134, 11, .25), 0 4px 12px rgba(0, 0, 0, .1)
+      }
+
+      /* ── Login card — full width ── */
+      .login-card {
+        padding: 24px 16px;
+        width: 95%;
+        max-width: 400px;
+        border-radius: 16px
+      }
+
+      .login-btn {
+        min-height: 52px;
+        font-size: 1rem;
+        border-radius: 10px
+      }
+
+      /* ── Welcome bar ── */
+      .welcome-bar {
+        padding: 12px;
+        gap: 10px;
+        border-radius: 12px
+      }
+
+      .welcome-avatar {
+        width: 38px;
+        height: 38px;
+        font-size: .9rem
+      }
+
+      .welcome-info h3 {
+        font-size: .88rem
+      }
+
+      .btn-logout {
+        min-height: 40px;
+        font-size: .72rem;
+        padding: 6px 12px;
+        border-radius: 8px
+      }
+
+      /* ── Stats grid — 2 columns ── */
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px
+      }
+
+      .stat {
+        padding: 10px 6px;
+        border-radius: 10px
+      }
+
+      .stat-n {
+        font-size: 1.4rem
+      }
+
+      .stat-l {
+        font-size: .6rem
+      }
+
+      /* ── My Entries table ── */
+      table {
+        font-size: .78rem
+      }
+
+      th {
+        padding: 8px 8px;
+        font-size: .62rem
+      }
+
+      td {
+        padding: 8px 8px
+      }
+
+      /* ── PDF / Export bar ── */
+      .pdf-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px
+      }
+
+      .pdf-bar>div {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px
+      }
+
+      /* ── Monthly overview — tighter ── */
+      .mo-tbl th,
+      .mo-tbl td {
+        padding: 4px 5px;
+        min-width: 30px;
+        font-size: .62rem
+      }
+
+      .mo-tbl tbody td.mo-name,
+      .mo-tbl thead th.mo-name {
+        min-width: 100px;
+        max-width: 110px;
+        font-size: .68rem
+      }
+
+      /* ── Overlays — bottom sheet style ── */
+      .login-overlay,
+      .reset-overlay,
+      .wn-overlay,
+      .missed-overlay {
+        align-items: flex-end
+      }
+
+      .login-card,
+      .wn-card,
+      .missed-card {
+        border-radius: 20px 20px 0 0;
+        width: 100%;
+        max-width: 100%;
+        max-height: 90vh;
+        animation: slideUp .3s ease
+      }
+
+      .wn-card {
+        padding: 24px 20px 28px
+      }
+
+      .missed-card {
+        padding: 24px 20px 28px
+      }
+
+      .reset-overlay .login-card {
+        border-radius: 20px 20px 0 0;
+        width: 100%;
+        max-width: 100%
+      }
+
+      /* ── Feedback textarea — taller ── */
+      .fb-textarea {
+        min-height: 100px;
+        font-size: 16px;
+        padding: 14px;
+        border-radius: 10px
+      }
+
+      /* ── Toast ── */
+      #toast {
+        bottom: 80px;
+        bottom: max(80px, calc(80px + var(--safe-b)));
+        font-size: .82rem;
+        padding: 10px 18px
+      }
+
+      /* ── View toggle ── */
+      .view-toggle button {
+        padding: 11px 10px;
+        font-size: .8rem;
+        min-height: 44px
+      }
+
+      /* ── Forgot link ── */
+      .forgot-link {
+        font-size: .76rem;
+        min-height: 48px;
+        line-height: 48px
+      }
+    }
+
+    @media(max-width:380px) {
+      .slots-grid {
+        gap: 6px
+      }
+
+      .slot-card {
+        padding: 12px 12px
+      }
+
+      .stat-n {
+        font-size: 1.2rem
+      }
+
+      .card {
+        padding: 12px 10px
+      }
+
+      .st-btn {
+        font-size: .95rem;
+        padding: 14px 10px;
+        min-height: 50px
+      }
+
+      #btnSubmit {
+        font-size: .95rem;
+        min-height: 50px
+      }
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(40px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    /* ═══ CREATIVE THEME REFRESH — playful, bright, still work-friendly ═══ */
+    :root {
+      --bg: #f6faf5;
+      --surface: rgba(255, 255, 255, .94);
+      --surface2: #f7f9fc;
+      --surface3: #e8edf5;
+      --border: #d8dee8;
+      --gold: #c37a00;
+      --gold2: #9f6200;
+      --gold-dim: rgba(195, 122, 0, .11);
+      --gold-glow: rgba(195, 122, 0, .18);
+      --green: #139b63;
+      --green-dim: rgba(19, 155, 99, .11);
+      --red: #d43f4d;
+      --red-dim: rgba(212, 63, 77, .11);
+      --blue: #246bdb;
+      --blue-dim: rgba(36, 107, 219, .11);
+      --orange: #e06b22;
+      --orange-dim: rgba(224, 107, 34, .12);
+      --ink: #182033;
+      --mint: #18b787;
+      --coral: #ef6262;
+      --sky: #38a3ff;
+      --text: #182033;
+      --muted: #667085;
+      --muted2: #475467;
+      --r: 8px;
+      --r2: 8px;
+      --shadow: 0 10px 26px rgba(24, 32, 51, .08), 0 1px 0 rgba(255, 255, 255, .75) inset;
+    }
+
+    body {
+      position: relative;
+      isolation: isolate;
+      background:
+        linear-gradient(135deg, #f7fbff 0%, #f2fbf5 42%, #fff8ea 100%);
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      background:
+        repeating-linear-gradient(90deg, rgba(36, 107, 219, .055) 0 1px, transparent 1px 72px),
+        repeating-linear-gradient(0deg, rgba(19, 155, 99, .045) 0 1px, transparent 1px 72px),
+        linear-gradient(180deg, rgba(255, 255, 255, .72), rgba(255, 255, 255, .2));
+      -webkit-mask-image: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, .75) 38%, transparent 100%);
+      mask-image: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, .75) 38%, transparent 100%);
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 6px;
+      z-index: 700;
+      pointer-events: none;
+      background: linear-gradient(90deg, var(--mint), var(--sky), #f6c445, var(--coral), var(--mint));
+    }
+
+    .page-hdr {
+      margin: 14px auto 0;
+      max-width: 1040px;
+      width: calc(100% - 28px);
+      border: 1px solid rgba(216, 222, 232, .86);
+      border-bottom: 1px solid rgba(216, 222, 232, .86);
+      border-radius: 0 0 18px 18px;
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, .96), rgba(255, 255, 255, .82)),
+        linear-gradient(90deg, rgba(24, 183, 135, .14), rgba(56, 163, 255, .1), rgba(246, 196, 69, .13));
+      box-shadow: 0 16px 34px rgba(24, 32, 51, .1);
+      backdrop-filter: blur(18px);
+    }
+
+    .hdr-left h1 {
+      font-size: clamp(1.05rem, 2vw, 1.45rem);
+      letter-spacing: 0;
+      color: var(--ink);
+      text-wrap: balance;
+    }
+
+    .hdr-left p {
+      color: var(--muted2);
+      font-weight: 600;
+    }
+
+    .date-badge,
+    .sheet-badge,
+    .admin-badge {
+      border-radius: 999px;
+      box-shadow: 0 6px 18px rgba(24, 32, 51, .07);
+    }
+
+    .sheet-badge {
+      background: rgba(56, 163, 255, .13);
+      border-color: rgba(56, 163, 255, .3);
+      color: #1763bd;
+    }
+
+    .date-badge {
+      background: rgba(246, 196, 69, .18);
+      border-color: rgba(195, 122, 0, .28);
+    }
+
+    .tabs {
+      top: 83px;
+      max-width: 820px;
+      width: calc(100% - 28px);
+      margin: 12px auto 0;
+      border: 1px solid rgba(216, 222, 232, .92);
+      border-radius: 999px;
+      padding: 5px;
+      background: rgba(255, 255, 255, .82);
+      box-shadow: 0 12px 28px rgba(24, 32, 51, .08);
+      backdrop-filter: blur(16px);
+    }
+
+    .tab {
+      border-radius: 999px;
+      border-bottom: none;
+      min-height: 42px;
+      color: var(--muted2);
+    }
+
+    .tab.on {
+      color: var(--ink);
+      border-bottom-color: transparent;
+      background: linear-gradient(135deg, rgba(246, 196, 69, .42), rgba(24, 183, 135, .22));
+      box-shadow: 0 8px 18px rgba(195, 122, 0, .12);
+    }
+
+    .wrap {
+      max-width: 920px;
+      padding-top: 24px;
+    }
+
+    .card,
+    .stat,
+    .welcome-bar,
+    .slot-card,
+    .login-card,
+    .wn-card,
+    .missed-card {
+      border-color: rgba(216, 222, 232, .92);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+    }
+
+    .card {
+      position: relative;
+      overflow: hidden;
+      border-radius: 8px;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      pointer-events: none;
+      background: linear-gradient(90deg, var(--mint), var(--sky), #f6c445, var(--coral));
+    }
+
+    .card-title {
+      color: var(--ink);
+      letter-spacing: .08em;
+    }
+
+    .card-title .ico {
+      color: var(--ink);
+      background: linear-gradient(135deg, rgba(246, 196, 69, .34), rgba(24, 183, 135, .18));
+      border: 1px solid rgba(195, 122, 0, .16);
+      box-shadow: 0 6px 14px rgba(24, 32, 51, .06);
+    }
+
+    .input-field,
+    select,
+    .fb-textarea {
+      background: rgba(247, 249, 252, .9);
+      border-color: rgba(196, 205, 219, .95);
+      box-shadow: 0 1px 0 rgba(255, 255, 255, .85) inset;
+    }
+
+    .input-field:focus,
+    select:focus,
+    .fb-textarea:focus {
+      border-color: var(--mint);
+      box-shadow: 0 0 0 3px rgba(24, 183, 135, .18), 0 1px 0 rgba(255, 255, 255, .9) inset;
+    }
+
+    .st-row {
+      gap: 12px;
+    }
+
+    .st-btn {
+      border-radius: 12px;
+      background: linear-gradient(180deg, #fff, #f7f9fc);
+      box-shadow: 0 8px 18px rgba(24, 32, 51, .06);
+    }
+
+    .st-btn.sp {
+      background: linear-gradient(135deg, rgba(19, 155, 99, .18), rgba(56, 163, 255, .1));
+    }
+
+    .st-btn.sa {
+      background: linear-gradient(135deg, rgba(212, 63, 77, .16), rgba(224, 107, 34, .1));
+    }
+
+    .slot-card {
+      border-radius: 12px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, .9), rgba(247, 249, 252, .9)),
+        linear-gradient(135deg, rgba(56, 163, 255, .08), rgba(246, 196, 69, .08));
+    }
+
+    .slot-time {
+      color: #1763bd;
+    }
+
+    .slot-time::before {
+      background: linear-gradient(135deg, var(--sky), var(--mint));
+      opacity: 1;
+    }
+
+    .btn-gold,
+    .login-btn,
+    .wn-dismiss {
+      background: linear-gradient(135deg, #d68600, #ef6262);
+      box-shadow: 0 12px 22px rgba(195, 122, 0, .22);
+    }
+
+    .btn-gold:hover:not(:disabled),
+    .login-btn:hover,
+    .wn-dismiss:hover {
+      background: linear-gradient(135deg, #bd7200, #df4f5d);
+    }
+
+    .btn-outline,
+    .btn-sm,
+    .btn-pdf,
+    .btn-csv2 {
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .72);
+    }
+
+    .stat {
+      border-radius: 8px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, .95), rgba(247, 249, 252, .9));
+    }
+
+    .stat-n {
+      color: var(--ink);
+    }
+
+    .welcome-bar {
+      background:
+        linear-gradient(135deg, rgba(19, 155, 99, .12), rgba(56, 163, 255, .1)),
+        rgba(255, 255, 255, .92);
+    }
+
+    .welcome-avatar {
+      background: linear-gradient(135deg, rgba(246, 196, 69, .45), rgba(24, 183, 135, .22));
+      color: var(--ink);
+      box-shadow: 0 8px 18px rgba(24, 32, 51, .09);
+    }
+
+    .tbl-wrap,
+    .mo-wrap {
+      border-color: rgba(216, 222, 232, .92);
+      box-shadow: 0 10px 24px rgba(24, 32, 51, .06);
+    }
+
+    thead tr,
+    .mo-tbl thead th,
+    .summary-tbl th {
+      background: linear-gradient(180deg, #f8fbff, #edf4fb);
+    }
+
+    th {
+      color: #1763bd;
+    }
+
+    .pill {
+      border: 1px solid currentColor;
+      border-radius: 999px;
+    }
+
+    .login-overlay,
+    .reset-overlay,
+    .wn-overlay,
+    .missed-overlay {
+      background:
+        linear-gradient(135deg, rgba(24, 32, 51, .34), rgba(24, 183, 135, .18)),
+        rgba(255, 255, 255, .64);
+    }
+
+    #toast {
+      box-shadow: 0 12px 28px rgba(24, 32, 51, .18);
+    }
+
+    @media(hover:hover) {
+
+      .card,
+      .stat,
+      .slot-card {
+        transition: transform var(--t), box-shadow var(--t), border-color var(--t);
+      }
+
+      .card:hover,
+      .stat:hover,
+      .slot-card:hover {
+        transform: translateY(-2px);
+        border-color: rgba(56, 163, 255, .34);
+        box-shadow: 0 16px 34px rgba(24, 32, 51, .11), 0 1px 0 rgba(255, 255, 255, .78) inset;
+      }
+
+      tbody tr:hover td {
+        background: rgba(56, 163, 255, .045);
+      }
+    }
+
+    @media(max-width:600px) {
+      body::after {
+        height: 5px;
+      }
+
+      .page-hdr {
+        width: calc(100% - 16px);
+        margin-top: 8px;
+        border-radius: 0 0 16px 16px;
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+
+      .tabs {
+        top: 78px;
+        width: calc(100% - 16px);
+        margin-top: 8px;
+        border-radius: 16px;
+      }
+
+      .tab {
+        font-size: .78rem;
+        min-height: 42px;
+      }
+
+      .wrap {
+        padding-top: 14px;
+      }
+
+      .card,
+      .stat {
+        border-radius: 8px;
+      }
+    }
+
+    @media(max-width:380px) {
+      .tabs {
+        top: 92px;
+      }
+    }
+
+    /* ═══ PERF: reduce paint on low-end ═══ */
+    @media(prefers-reduced-motion:reduce) {
+
+      *,
+      *::before,
+      *::after {
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="page-hdr no-print">
+    <div class="hdr-left">
+      <h1>📋 Faculty Worksheet System</h1>
+      <p id="headerSub">Loading…</p>
+    </div>
+    <div class="hdr-right">
+      <div class="sheet-badge" id="sheetBadge">📄 Loading…</div>
+      <div class="date-badge" id="dateBadge">📅 Loading…</div>
+      <div class="admin-badge" id="adminBadge" onclick="toggleAdmin()">🔓 Admin</div>
+    </div>
+  </div>
+
+  <div class="tabs no-print">
+    <button class="tab on" onclick="goTab('entry',this)">✏️ Entry</button>
+    <button class="tab" onclick="goTab('report',this)">📊 Report <span class="lock-ico">🔒</span></button>
+  </div>
+
+  <div class="wrap">
+    <div id="loader">
+      <div class="big-spin"></div>Loading system…
+    </div>
+
+    <!-- ═══ ENTRY ═══ -->
+    <div class="panel" id="panel-entry">
+      <div id="entryLoginSection">
+        <div class="card">
+          <div class="card-title">
+            <div class="ico">🔐</div>Faculty Login
+          </div>
+          <div id="entryLoginMode">
+            <form id="entryLoginForm" autocomplete="on" onsubmit="return handleEntryLoginSubmit(event)">
+              <div class="field">
+                <div class="lbl">Faculty Name</div>
+                <div class="sel-wrap"><select id="selFacEntry" name="username" autocomplete="username"
+                    onchange="onFacNameChange()">
+                    <option value="">— Select your name —</option>
+                  </select></div>
+              </div>
+              <input type="hidden" id="entryHiddenUser" name="username-hidden" autocomplete="username" />
+              <div class="field">
+                <div class="lbl">Password</div><input type="password" class="input-field" id="facEntryPass"
+                  name="password" placeholder="Enter your password" autocomplete="current-password" />
+              </div>
+              <div class="login-error" id="entryLoginError"></div>
+              <button type="submit" class="login-btn" id="entryLoginBtn">🔓 Login</button>
+            </form>
+            <button class="forgot-link" onclick="showResetOverlay()">🔑 Forgot password? / First time? Set
+              password</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="entryFormSection" style="display:none">
+        <div class="welcome-bar">
+          <div class="welcome-avatar" id="welAvatar">?</div>
+          <div class="welcome-info">
+            <h3 id="welName">—</h3>
+            <p id="welSub">Worksheet Entry</p>
+          </div>
+          <button class="btn-logout" onclick="doFacultyLogout()">🚪 Logout</button>
+        </div>
+
+        <!-- ATTENDANCE STATS -->
+        <div class="stats" id="entryStats" style="display:none">
+          <div class="stat">
+            <div class="stat-n" id="esWorking">0</div>
+            <div class="stat-l">Working Days</div>
+          </div>
+          <div class="stat">
+            <div class="stat-n" style="color:var(--green)" id="esPresent">0</div>
+            <div class="stat-l">Present</div>
+          </div>
+          <div class="stat">
+            <div class="stat-n" style="color:var(--red)" id="esAbsent">0</div>
+            <div class="stat-l">Absent</div>
+          </div>
+          <div class="stat">
+            <div class="stat-n" style="color:var(--blue)" id="esFill">0%</div>
+            <div class="stat-l">Fill Rate</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <div class="ico">📅</div>Select Date
+          </div>
+          <div class="field">
+            <div class="lbl">Worksheet Date</div><input type="date" class="input-field" id="entryDate"
+              onchange="onEntryDateChange()" />
+          </div>
+          <div class="alert inf" id="noticeEdit">✏️ Previous entry found — update and resubmit to overwrite.</div>
+          <div class="alert leave" id="noticeBlocked"></div>
+        </div>
+
+        <div class="card" id="statusCard">
+          <div class="card-title">
+            <div class="ico">📌</div>Attendance Status
+          </div>
+          <div class="st-row">
+            <button class="st-btn" id="btnP" onclick="pickStatus('Present')">✅ Present</button>
+            <button class="st-btn" id="btnA" onclick="pickStatus('Absent')">❌ Absent</button>
+          </div>
+          <div class="alert wrn" id="alertAbsent" style="margin-top:12px">⚠️ Marked Absent — time-slot data will be
+            cleared.</div>
+        </div>
+
+        <div id="slotsWrap">
+          <div class="card">
+            <div class="card-title">
+              <div class="ico">🕐</div>Time Slots
+            </div>
+            <div class="slots-grid" id="slotsGrid"></div>
+          </div>
+        </div>
+
+        <button class="btn btn-gold" id="btnSubmit" onclick="doSubmit()">Submit Entry</button>
+
+        <div class="card" id="myEntriesCard" style="display:none;margin-top:18px">
+          <div class="card-title">
+            <div class="ico">📋</div>My Entries This Month
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Status</th>
+                  <th>Slots</th>
+                  <th>Fill %</th>
+                </tr>
+              </thead>
+              <tbody id="myEntriesBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- FEEDBACK CARD -->
+        <div class="card" style="margin-top:18px">
+          <div class="card-title">
+            <div class="ico">💬</div>Give Feedback
+          </div>
+          <p style="font-size:.78rem;color:var(--muted);margin-bottom:12px">Help us improve! Share your thoughts,
+            suggestions, or report any issues.</p>
+          <textarea class="fb-textarea" id="feedbackText" placeholder="Write your feedback here…"
+            maxlength="1000"></textarea>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px">
+            <span style="font-size:.68rem;color:var(--muted)" id="fbCharCount">0 / 1000</span>
+            <button class="btn-outline" id="fbSubmitBtn" onclick="submitFeedback()" style="padding:10px 20px">📨 Send
+              Feedback</button>
+          </div>
+          <div class="fb-success" id="fbSuccess">✅ Thank you for your feedback! It has been recorded.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ REPORT ═══ -->
+    <div class="panel" id="panel-report">
+      <div class="card">
+        <div class="card-title">
+          <div class="ico">🏖️</div>Special Leaves
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px">
+          <div class="field" style="flex:1;min-width:130px;margin-bottom:0">
+            <div class="lbl">Date</div><input type="date" class="input-field" id="leaveDate" />
+          </div>
+          <div class="field" style="flex:2;min-width:180px;margin-bottom:0">
+            <div class="lbl">Remarks</div><input type="text" class="input-field" id="leaveRemarks"
+              placeholder="e.g. Ambedkar Jayanti" autocomplete="off" />
+          </div>
+          <button class="btn-outline" onclick="addLeave()" style="padding:11px 16px">➕ Add</button>
+        </div>
+        <div class="tbl-wrap" id="leavesTblWrap" style="display:none">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Day</th>
+                <th>Remarks</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="leavesBody"></tbody>
+          </table>
+        </div>
+        <p id="noLeavesMsg" style="font-size:.78rem;color:var(--muted);text-align:center;padding:8px 0">No special
+          leaves declared this month.</p>
+      </div>
+
+      <!-- VIEW TOGGLE: Daily / Monthly -->
+      <div class="view-toggle no-print">
+        <button class="active" id="togDaily" onclick="switchReportView('daily')">📅 Daily Report</button>
+        <button id="togMonthly" onclick="switchReportView('monthly')">📆 Monthly Overview</button>
+      </div>
+
+      <!-- ── DAILY REPORT SECTION ── -->
+      <div id="dailyReportSection">
+        <div class="card">
+          <div class="card-title">
+            <div class="ico">📅</div>Report Date
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <div class="lbl">Select date</div><input type="date" class="input-field" id="reportDate"
+              onchange="loadReport()" />
+          </div>
+        </div>
+
+        <div class="alert leave" id="repLeaveNotice" style="display:none"></div>
+
+        <div class="stats" id="statRow" style="display:none">
+          <div class="stat">
+            <div class="stat-n" id="stTotal">0</div>
+            <div class="stat-l">Total</div>
+          </div>
+          <div class="stat">
+            <div class="stat-n" style="color:var(--green)" id="stPresent">0</div>
+            <div class="stat-l">Present</div>
+          </div>
+          <div class="stat">
+            <div class="stat-n" style="color:var(--red)" id="stAbsent">0</div>
+            <div class="stat-l">Absent</div>
+          </div>
+          <div class="stat">
+            <div class="stat-n" style="color:#854d0e" id="stNF">0</div>
+            <div class="stat-l">Not Filled</div>
+          </div>
+        </div>
+
+        <div class="pdf-bar" id="repToolbar" style="display:none">
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <button class="btn-sm active-f" id="fAll" onclick="applyFilter('all',this)">All</button>
+            <button class="btn-sm" id="fPresent" onclick="applyFilter('present',this)">✅ Present</button>
+            <button class="btn-sm" id="fAbsent" onclick="applyFilter('absent',this)">❌ Absent</button>
+            <button class="btn-sm" id="fNF" onclick="applyFilter('notfill',this)">⚠️ Not Filled</button>
+          </div>
+        </div>
+
+        <div class="tbl-wrap" id="repTblWrap" style="display:none">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Faculty</th>
+                <th>Status</th>
+                <th>Slots</th>
+                <th>Fill</th>
+              </tr>
+            </thead>
+            <tbody id="repTblBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── MONTHLY OVERVIEW SECTION ── -->
+      <div id="monthlyReportSection" style="display:none">
+        <div class="card">
+          <div class="card-title">
+            <div class="ico">📆</div>Monthly Faculty Overview
+          </div>
+          <p style="font-size:.78rem;color:var(--muted);margin-bottom:14px">Complete view of all faculty attendance for
+            the entire month. Scroll horizontally to see all dates.</p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px">
+            <div class="field" style="flex:1;min-width:220px;margin-bottom:0">
+              <div class="lbl">Month</div>
+              <div class="sel-wrap">
+                <select id="moSheetMonth" class="input-field" style="padding-right:38px" onchange="onMonthlySheetChange()">
+                  <option value="">Select month sheet</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn-outline" id="btnLoadMonthly" onclick="loadMonthlyReport()" style="margin-bottom:0">🔄
+              Load Monthly Data</button>
+          </div>
+          <div id="monthlyLoader" style="display:none;text-align:center;padding:20px;color:var(--muted)">
+            <div class="big-spin"></div>Loading monthly data…
+          </div>
+        </div>
+
+        <div id="monthlyContent" style="display:none">
+          <div class="stats" id="moStats">
+            <div class="stat">
+              <div class="stat-n" id="moTotal">0</div>
+              <div class="stat-l">Faculty</div>
+            </div>
+            <div class="stat">
+              <div class="stat-n" style="color:var(--gold)" id="moWorkDays">0</div>
+              <div class="stat-l">Working Days</div>
+            </div>
+            <div class="stat">
+              <div class="stat-n" style="color:var(--blue)" id="moWorkTillDate">0</div>
+              <div class="stat-l">Till Date</div>
+            </div>
+            <div class="stat">
+              <div class="stat-n" style="color:var(--green)" id="moAvgPresent">0</div>
+              <div class="stat-l">Avg Present</div>
+            </div>
+            <div class="stat">
+              <div class="stat-n" style="color:var(--red)" id="moAvgAbsent">0</div>
+              <div class="stat-l">Avg Absent</div>
+            </div>
+            <div class="stat">
+              <div class="stat-n" style="color:var(--blue)" id="moAvgFill">0%</div>
+              <div class="stat-l">Avg Fill Rate</div>
+            </div>
+          </div>
+
+          <div class="pdf-bar">
+            <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+              <span
+                style="font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">Search:</span>
+              <input type="text" class="input-field" id="moSearch" placeholder="Filter faculty…" autocomplete="off"
+                oninput="debouncedFilterMonthly()"
+                style="width:180px;padding:8px 12px;min-height:38px;font-size:.82rem" />
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn-pdf" onclick="exportMonthlySummaryPdf()">🖨️ Summary PDF</button>
+            </div>
+          </div>
+
+          <div class="mo-wrap" id="moTableWrap"></div>
+
+          <div class="mo-legend">
+            <span><span class="mo-legend-dot" style="background:var(--green-dim);border:1px solid var(--green)"></span>
+              Present (all 7 slots)</span>
+            <span><span class="mo-legend-dot" style="background:rgba(234,88,12,.1);border:1px solid #ea580c"></span>
+              Partial (hover for slots)</span>
+            <span><span class="mo-legend-dot" style="background:var(--red-dim);border:1px solid var(--red)"></span>
+              Absent (AB)</span>
+            <span><span class="mo-legend-cross">✖</span> Not Marked</span>
+            <span><span class="mo-legend-dot" style="background:#fef2f2;border:1px solid #dc2626"></span> Sunday</span>
+            <span><span class="mo-legend-dot" style="background:#fff7ed;border:1px solid #ea580c"></span> Holiday</span>
+          </div>
+
+          <!-- Faculty Summary Table -->
+          <div class="card" style="margin-top:16px">
+            <div class="card-title">
+              <div class="ico">📋</div>Faculty Attendance Summary
+            </div>
+            <div class="tbl-wrap" id="moSummaryWrap"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN OVERLAY -->
+  <div class="login-overlay" id="loginOverlay" style="display:none">
+    <div class="login-card">
+      <h2>🔐 Admin Access</h2>
+      <p>Report tab requires admin credentials.</p>
+      <div class="login-error" id="loginError"></div>
+      <div class="field">
+        <div class="lbl">Username</div><input type="text" class="input-field" id="loginUser" placeholder="Username"
+          autocomplete="off" value="admin" />
+      </div>
+      <div class="field">
+        <div class="lbl">Password</div><input type="password" class="input-field" id="loginPass"
+          placeholder="Password" />
+      </div>
+      <button class="login-btn" id="loginBtn" onclick="doAdminLogin()">🔓 Login</button>
+      <button class="login-back" onclick="cancelAdminLogin()">← Back</button>
+    </div>
+  </div>
+
+  <!-- PASSWORD RESET / SET OVERLAY -->
+  <div class="reset-overlay" id="resetOverlay">
+    <div class="login-card" style="max-width:400px">
+      <h2 id="resetTitle">🔑 Set / Reset Password</h2>
+      <p>Verify your identity with your Date of Birth, then set a new password.</p>
+      <div class="login-error" id="resetError"></div>
+      <div class="field">
+        <div class="lbl">Faculty Name</div>
+        <div class="sel-wrap"><select id="resetName" class="input-field" style="padding-right:38px">
+            <option value="">— Select your name —</option>
+          </select></div>
+      </div>
+      <div class="field">
+        <div class="lbl">Date of Birth</div><input type="date" class="input-field" id="resetDob" />
+      </div>
+      <div class="field">
+        <div class="lbl">New Password</div><input type="password" class="input-field" id="resetNewPass"
+          placeholder="Min 4 characters" autocomplete="new-password" />
+      </div>
+      <div class="field">
+        <div class="lbl">Confirm Password</div><input type="password" class="input-field" id="resetConfirmPass"
+          placeholder="Re-enter password" autocomplete="new-password" />
+      </div>
+      <button class="login-btn" id="resetBtn" onclick="doResetPassword()">🔑 Set Password</button>
+      <button class="login-back" onclick="hideResetOverlay()">← Back to Login</button>
+    </div>
+  </div>
+
+  <!-- Floating tooltip for monthly report -->
+  <div id="moTooltip"></div>
+
+  <!-- WHAT'S NEW OVERLAY -->
+  <div class="wn-overlay" id="whatsNewOverlay">
+    <div class="wn-card">
+      <h2>🎉 What's New</h2>
+      <div class="wn-ver">Version 10 — Latest Update</div>
+      <ul class="wn-list">
+        <li><span class="wn-emoji">🔐</span>
+          <div class="wn-text"><b>Stay Logged In</b> — You now remain logged in across sessions. No need to re-enter
+            your password every time!</div>
+        </li>
+        <li><span class="wn-emoji">💬</span>
+          <div class="wn-text"><b>Give Feedback</b> — A new feedback option has been added to the Entry tab. Share your
+            thoughts and suggestions anytime.</div>
+        </li>
+        <li><span class="wn-emoji">⏰</span>
+          <div class="wn-text"><b>Missed Entry Reminders</b> — You'll now see a popup reminder for any past working days
+            where you haven't filled your worksheet.</div>
+        </li>
+      </ul>
+      <button class="wn-dismiss" onclick="dismissWhatsNew()">👍 Got It!</button>
+    </div>
+  </div>
+
+  <!-- MISSED DATES REMINDER OVERLAY -->
+  <div class="missed-overlay" id="missedOverlay">
+    <div class="missed-card">
+      <h2>⏰ Unfilled Worksheets</h2>
+      <p class="missed-sub">You have unfilled entries for the following dates. Tap a date to fill it now.</p>
+      <ul class="missed-dates-list" id="missedDatesList"></ul>
+      <button class="missed-dismiss" onclick="dismissMissed()">✕ Dismiss & Fill Later</button>
+    </div>
+  </div>
+
+  <!-- REPORT MISSING OVERLAY (Admin) -->
+  <div class="missed-overlay" id="reportMissingOverlay">
+    <div class="missed-card report-missing-card">
+      <h2 id="reportMissingTitle">⚠️ Unfilled Worksheets</h2>
+      <p class="missed-sub" id="reportMissingSub">Missing entries list</p>
+      <ul class="missed-dates-list" id="reportMissingList"></ul>
+      <button class="missed-copy" onclick="copyReportMissing()">📋 Copy List</button>
+      <button class="missed-dismiss" onclick="dismissReportMissing()">✕ Close</button>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <script>
+    // Supabase config for GitHub hosting
+    var SUPABASE_URL = "https://cnnxavlpmqvdbxifnnvz.supabase.co";
+    var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNubnhhdmxwbXF2ZGJ4aWZubnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5NDY5MTksImV4cCI6MjA5NTUyMjkxOX0.Efblztz53sr1ufbG2s9dOERGjEoPdOTZiaVPm5VlcqA";
+    var APP_VERSION = "github-supabase";
+    var ADMIN_USER = "admin";
+    var ADMIN_PASS = "portal77";
+    var APP_TIMEZONE = (typeof Intl !== "undefined" && Intl.DateTimeFormat)
+      ? (Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC")
+      : "UTC";
+
+    var DATA_TABLE = "faculty";
+    var ATTENDANCE_TABLE = "attendance_entries";
+    var LEAVES_TABLE = "special_leaves";
+    var FEEDBACK_TABLE = "feedback";
+
+    var SHORT_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    var FULL_MONTHS = [
+      "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"
+    ];
+
+    var FACULTY_NAMES = [
+      "Mr. Henry", "Ms. Aarti Pundir", "Ms. Pooja Chauhan", "Ms. Sangeeta Negi",
+      "Ms. Khushboo Gautam", "Ms. Khushboo Bahuguna", "Ms. Rajani Air", "Ms. Kiran Tripathi",
+      "Ms. Smriti", "Ms. Madhu Panwar", "Ms. Kanchan Rawat", "Ms. Simran Ahuja",
+      "Ms. Neha", "Ms. Manisha Kandiyal", "Ms. Reshma Shah", "Mr. Sachin Kumar",
+      "Mr. Prakul Topwal", "Ms. Mansi", "Ms. Akshi Bangari", "Ms. Bhumika",
+      "Ms. Ritika", "Ms. Meenakshi Negi", "Ms. Bobby", "Ms. Shweta Rana"
+    ];
+
+    function pad2_(n) { return String(n).padStart(2, "0"); }
+
+    function formatDateISO_(date) {
+      if (!(date instanceof Date) || isNaN(date.getTime())) return "";
+      if (typeof Intl === "undefined" || !Intl.DateTimeFormat) {
+        return date.getFullYear() + "-" + pad2_(date.getMonth() + 1) + "-" + pad2_(date.getDate());
+      }
+      var parts = new Intl.DateTimeFormat("en-CA", {
+        timeZone: APP_TIMEZONE,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+      }).formatToParts(date);
+      var y = "", m = "", d = "";
+      for (var i = 0; i < parts.length; i++) {
+        if (parts[i].type === "year") y = parts[i].value;
+        if (parts[i].type === "month") m = parts[i].value;
+        if (parts[i].type === "day") d = parts[i].value;
+      }
+      if (!y) return date.getFullYear() + "-" + pad2_(date.getMonth() + 1) + "-" + pad2_(date.getDate());
+      return y + "-" + m + "-" + d;
+    }
+
+    function formatDateFull_(date) {
+      if (!date) return "";
+      if (typeof Intl === "undefined" || !Intl.DateTimeFormat) return date.toDateString();
+      return new Intl.DateTimeFormat("en-GB", {
+        timeZone: APP_TIMEZONE,
+        weekday: "long",
+        day: "2-digit",
+        month: "long",
+        year: "numeric"
+      }).format(date);
+    }
+
+    function formatDateShort_(date) {
+      if (!date) return "";
+      if (typeof Intl === "undefined" || !Intl.DateTimeFormat) {
+        return pad2_(date.getDate()) + "/" + pad2_(date.getMonth() + 1) + "/" + date.getFullYear();
+      }
+      return new Intl.DateTimeFormat("en-GB", {
+        timeZone: APP_TIMEZONE,
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+      }).format(date);
+    }
+
+    function formatDayName_(date) {
+      if (!date) return "";
+      if (typeof Intl === "undefined" || !Intl.DateTimeFormat) return date.toDateString().split(" ")[0];
+      return new Intl.DateTimeFormat("en-GB", {
+        timeZone: APP_TIMEZONE,
+        weekday: "long"
+      }).format(date);
+    }
+
+    function buildQueryString_(params) {
+      var parts = [];
+      var key;
+      for (key in params) {
+        if (!Object.prototype.hasOwnProperty.call(params, key)) continue;
+        if (params[key] === undefined || params[key] === null || params[key] === "") continue;
+        parts.push(encodeURIComponent(key) + "=" + encodeURIComponent(String(params[key])));
+      }
+      return parts.join("&");
+    }
+
+    async function supabaseRequest_(method, path, params, body, prefer, extraHeaders) {
+      var url = SUPABASE_URL.replace(/\/+$/, "") + "/rest/v1/" + path;
+      var queryString = buildQueryString_(params || {});
+      if (queryString) url += "?" + queryString;
+
+      var headers = {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: "Bearer " + SUPABASE_ANON_KEY,
+        Accept: "application/json"
+      };
+
+      if (prefer) headers.Prefer = prefer;
+      if (extraHeaders) {
+        for (var h in extraHeaders) {
+          if (Object.prototype.hasOwnProperty.call(extraHeaders, h)) headers[h] = extraHeaders[h];
+        }
+      }
+
+      var options = {
+        method: String(method || "get").toUpperCase(),
+        headers: headers
+      };
+
+      if (body !== undefined && body !== null) {
+        headers["Content-Type"] = "application/json";
+        options.body = JSON.stringify(body);
+      }
+
+      var response = await fetch(url, options);
+      var text = await response.text();
+      if (!response.ok) {
+        throw new Error("Supabase " + options.method + " " + path + " failed (" + response.status + "): " + text);
+      }
+      if (!text) return null;
+      return JSON.parse(text);
+    }
+
+    async function supabaseGetRows_(table, params) {
+      var result = await supabaseRequest_("get", table, params || {}, null, null, null);
+      return Array.isArray(result) ? result : [];
+    }
+
+    async function supabaseInsertRows_(table, rows) {
+      var result = await supabaseRequest_("post", table, {}, rows, "return=representation", null);
+      return Array.isArray(result) ? result : [];
+    }
+
+    async function supabaseUpsertRows_(table, rows, onConflict) {
+      var params = {};
+      if (onConflict) params.on_conflict = onConflict;
+      var result = await supabaseRequest_("post", table, params, rows, "resolution=merge-duplicates,return=representation", null);
+      return Array.isArray(result) ? result : [];
+    }
+
+    async function supabasePatchRows_(table, params, body) {
+      var result = await supabaseRequest_("patch", table, params || {}, body, "return=representation", null);
+      return Array.isArray(result) ? result : [];
+    }
+
+    async function supabaseDeleteRows_(table, params) {
+      var result = await supabaseRequest_("delete", table, params || {}, null, "return=representation", null);
+      return Array.isArray(result) ? result : [];
+    }
+
+    function getCurrentSheetName() {
+      var d = new Date();
+      return FULL_MONTHS[d.getMonth()] + d.getFullYear();
+    }
+
+    function getSheetNameForYearMonth_(year, month) {
+      return FULL_MONTHS[month] + year;
+    }
+
+    function parseMonthSheetName_(sheetName) {
+      var name = String(sheetName || "").trim().replace(/\s+/g, "");
+      if (!name) return null;
+
+      for (var i = 0; i < FULL_MONTHS.length; i++) {
+        var prefix = FULL_MONTHS[i];
+        if (name.indexOf(prefix) === 0) {
+          var yearPart = name.substring(prefix.length);
+          if (/^\d{4}$/.test(yearPart)) {
+            var year = parseInt(yearPart, 10);
+            return {
+              sheetName: prefix + year,
+              year: year,
+              month: i,
+              monthLabel: FULL_MONTHS[i] + " " + year
+            };
+          }
+        }
+      }
+      return null;
+    }
+
+    function getMonthSheetMeta_(sheetName) {
+      var parsed = parseMonthSheetName_(sheetName);
+      if (parsed) return parsed;
+
+      var d = new Date();
+      return {
+        sheetName: getCurrentSheetName(),
+        year: d.getFullYear(),
+        month: d.getMonth(),
+        monthLabel: FULL_MONTHS[d.getMonth()] + " " + d.getFullYear()
+      };
+    }
+
+    function parseDateInput_(dateStr) {
+      var parts = String(dateStr || "").split("-");
+      if (parts.length !== 3) return null;
+
+      var year = parseInt(parts[0], 10);
+      var month = parseInt(parts[1], 10) - 1;
+      var day = parseInt(parts[2], 10);
+      if (isNaN(year) || isNaN(month) || isNaN(day)) return null;
+
+      var dateObj = new Date(year, month, day);
+      if (
+        isNaN(dateObj.getTime()) ||
+        dateObj.getFullYear() !== year ||
+        dateObj.getMonth() !== month ||
+        dateObj.getDate() !== day
+      ) return null;
+
+      return {
+        year: year,
+        month: month,
+        day: day,
+        dateObj: dateObj,
+        sheetName: getSheetNameForYearMonth_(year, month),
+        monthLabel: FULL_MONTHS[month] + " " + year
+      };
+    }
+
+    function normalizeDate_(val) {
+      if (!val) return "";
+      if (val instanceof Date) {
+        return formatDateISO_(val);
+      }
+
+      var s = String(val).trim();
+      if (!s) return "";
+      if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+
+      if (s.indexOf("/") > -1 || s.indexOf("-") > -1) {
+        var d = new Date(s);
+        if (!isNaN(d.getTime())) {
+          return formatDateISO_(d);
+        }
+      }
+
+      return s;
+    }
+
+    function normalizeSlots_(value) {
+      var out = ["", "", "", "", "", "", ""];
+      if (!value) return out;
+
+      var arr = value;
+      if (typeof value === "string") {
+        try {
+          arr = JSON.parse(value);
+        } catch (e) {
+          arr = String(value).split("|");
+        }
+      }
+
+      if (!arr || !arr.length) return out;
+      for (var i = 0; i < 7; i++) {
+        out[i] = String(arr[i] || "").trim();
+      }
+      return out;
+    }
+
+    function countFilledSlots_(slots) {
+      var filled = 0;
+      for (var i = 0; i < slots.length; i++) {
+        if (String(slots[i] || "").trim()) filled++;
+      }
+      return filled;
+    }
+
+    function getCutoffInfo_() {
+      var now = new Date();
+      var cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate(), CUTOFF_HOUR, CUTOFF_MIN, 0, 0);
+      var effective = (now.getTime() >= cutoff.getTime())
+        ? now
+        : new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+
+      return {
+        todayISO: formatDateISO_(now),
+        cutoffISO: formatDateISO_(effective)
+      };
+    }
+
+    function getYesterdayISO_() {
+      var d = new Date();
+      d.setDate(d.getDate() - 1);
+      return formatDateISO_(d);
+    }
+
+    function isSunday_(dateObj) {
+      return dateObj.getDay() === 0;
+    }
+
+    function monthSortValue_(sheetName) {
+      var meta = parseMonthSheetName_(sheetName);
+      if (!meta) return 0;
+      return meta.year * 12 + meta.month;
+    }
+
+    async function loadFacultyRows_() {
+      return supabaseGetRows_(DATA_TABLE, {
+        select: "id,name,father_name,dob,password,pwd_set_date",
+        order: "id.asc"
+      });
+    }
+
+    async function getFacultyRows_() {
+      var rows = await loadFacultyRows_();
+      var existing = {};
+      var i;
+      for (i = 0; i < rows.length; i++) {
+        var existingName = String(rows[i].name || "").trim().toLowerCase();
+        if (existingName) existing[existingName] = true;
+      }
+
+      var missing = [];
+      for (i = 0; i < FACULTY_NAMES.length; i++) {
+        var wantedName = FACULTY_NAMES[i];
+        if (!existing[String(wantedName).trim().toLowerCase()]) {
+          missing.push({ name: wantedName });
+        }
+      }
+
+      if (missing.length) {
+        await supabaseInsertRows_(DATA_TABLE, missing);
+        rows = await loadFacultyRows_();
+      }
+
+      return rows;
+    }
+
+    async function getFacultyNames_() {
+      var rows = await getFacultyRows_();
+      var names = [];
+      for (var i = 0; i < rows.length; i++) {
+        var n = String(rows[i].name || "").trim();
+        if (n) names.push(n);
+      }
+      return names;
+    }
+
+    function findFacultyRecord_(name, rows) {
+      var target = String(name || "").trim().toLowerCase();
+      if (!target) return null;
+
+      var list = rows || [];
+      for (var i = 0; i < list.length; i++) {
+        if (String(list[i].name || "").trim().toLowerCase() === target) {
+          return list[i];
+        }
+      }
+      return null;
+    }
+
+    async function getSpecialLeavesRows_(monthKey) {
+      return supabaseGetRows_(LEAVES_TABLE, {
+        select: "month_key,leave_date,remarks",
+        month_key: "eq." + monthKey,
+        order: "leave_date.asc"
+      });
+    }
+
+    async function getSpecialLeaveDatesMap_(monthSheetName) {
+      var monthMeta = getMonthSheetMeta_(monthSheetName);
+      var rows = await getSpecialLeavesRows_(monthMeta.sheetName);
+      var map = {};
+
+      for (var i = 0; i < rows.length; i++) {
+        map[normalizeDate_(rows[i].leave_date)] = String(rows[i].remarks || "").trim();
+      }
+
+      return map;
+    }
+
+    async function getAttendanceRowsForMonth_(monthKey) {
+      return supabaseGetRows_(ATTENDANCE_TABLE, {
+        select: "faculty_name,month_key,entry_date,status,slots",
+        month_key: "eq." + monthKey,
+        order: "entry_date.asc,faculty_name.asc"
+      });
+    }
+
+    async function getAttendanceRowsForFacultyMonth_(facultyName, monthKey) {
+      return supabaseGetRows_(ATTENDANCE_TABLE, {
+        select: "faculty_name,month_key,entry_date,status,slots",
+        faculty_name: "eq." + facultyName,
+        month_key: "eq." + monthKey,
+        order: "entry_date.asc"
+      });
+    }
+
+    async function getAttendanceRowsForDate_(dateStr) {
+      return supabaseGetRows_(ATTENDANCE_TABLE, {
+        select: "faculty_name,month_key,entry_date,status,slots",
+        entry_date: "eq." + dateStr,
+        order: "faculty_name.asc"
+      });
+    }
+
+    function getAttendanceMapByFacultyAndDate_(rows) {
+      var map = {};
+      for (var i = 0; i < rows.length; i++) {
+        var facultyKey = String(rows[i].faculty_name || "").trim().toLowerCase();
+        var dateKey = normalizeDate_(rows[i].entry_date);
+        if (!facultyKey || !dateKey) continue;
+        if (!map[facultyKey]) map[facultyKey] = {};
+        map[facultyKey][dateKey] = rows[i];
+      }
+      return map;
+    }
+
+    function getAttendanceMapByDate_(rows) {
+      var map = {};
+      for (var i = 0; i < rows.length; i++) {
+        var key = normalizeDate_(rows[i].entry_date);
+        if (key) map[key] = rows[i];
+      }
+      return map;
+    }
+
+    function getAttendanceMapByFaculty_(rows) {
+      var map = {};
+      for (var i = 0; i < rows.length; i++) {
+        var key = String(rows[i].faculty_name || "").trim().toLowerCase();
+        if (key) map[key] = rows[i];
+      }
+      return map;
+    }
+
+    async function ensureDefaultFaculty_() {
+      await getFacultyRows_();
+    }
+
+    async function ensureCurrentMonthSheet() {
+      await ensureDefaultFaculty_();
+      return getCurrentSheetName();
+    }
+
+    function verifyAdmin(user, pass) {
+      return { ok: (user === ADMIN_USER && pass === ADMIN_PASS) };
+    }
+
+    async function checkHasPassword(name) {
+      try {
+        var rows = await getFacultyRows_();
+        var faculty = findFacultyRecord_(name, rows);
+        if (!faculty) return { ok: false, msg: "Faculty not found." };
+
+        return {
+          ok: true,
+          hasPassword: String(faculty.password || "").trim().length > 0
+        };
+      } catch (e) {
+        return { ok: false, msg: e.toString() };
+      }
+    }
+
+    async function verifyFacultyPassword(name, password) {
+      try {
+        var rows = await getFacultyRows_();
+        var faculty = findFacultyRecord_(name, rows);
+        if (!faculty) return { ok: false, msg: "Faculty not found." };
+
+        var storedPwd = String(faculty.password || "").trim();
+        var fillRate = 100;
+        var stats = await getFacultyStats(name);
+        if (stats && stats.ok && stats.found) fillRate = stats.fillRate;
+
+        if (!storedPwd) return { ok: false, msg: "No password set. Please set your password first." };
+        if (storedPwd === String(password || "").trim()) {
+          return { ok: true, fillRate: fillRate, allowRemember: (fillRate >= 100) };
+        }
+        return { ok: false, msg: "Incorrect password." };
+      } catch (e) {
+        return { ok: false, msg: e.toString() };
+      }
+    }
+
+    async function resetFacultyPassword(name, dob, newPassword) {
+      try {
+        if (!name) return { ok: false, msg: "Name required." };
+        if (!dob) return { ok: false, msg: "Date of Birth required." };
+        if (!newPassword || String(newPassword).trim().length < 4) {
+          return { ok: false, msg: "Password must be at least 4 characters." };
+        }
+
+        var rows = await getFacultyRows_();
+        var faculty = findFacultyRecord_(name, rows);
+        if (!faculty) return { ok: false, msg: "Faculty not found." };
+
+        var storedDob = faculty.dob ? normalizeDate_(faculty.dob) : "";
+        var inputDob = String(dob).trim();
+        var todayISO = formatDateISO_(new Date());
+
+        if (storedDob !== inputDob) {
+          return { ok: false, msg: "Name and Date of Birth do not match our records." };
+        }
+
+        await supabasePatchRows_(DATA_TABLE, {
+          name: "eq." + String(faculty.name || "").trim()
+        }, {
+          password: String(newPassword).trim(),
+          pwd_set_date: todayISO
+        });
+
+        return { ok: true };
+      } catch (e) {
+        return { ok: false, msg: e.toString() };
+      }
+    }
+
+    async function getMonthlySheetOptions_() {
+      var months = {};
+      var i;
+
+      var attendanceMonthRows = await supabaseGetRows_(ATTENDANCE_TABLE, {
+        select: "month_key",
+        order: "month_key.desc"
+      });
+      for (i = 0; i < attendanceMonthRows.length; i++) {
+        var attMeta = parseMonthSheetName_(attendanceMonthRows[i].month_key);
+        if (attMeta) months[attMeta.sheetName] = true;
+      }
+
+      var leaveMonthRows = await supabaseGetRows_(LEAVES_TABLE, {
+        select: "month_key",
+        order: "month_key.desc"
+      });
+      for (i = 0; i < leaveMonthRows.length; i++) {
+        var leaveMeta = parseMonthSheetName_(leaveMonthRows[i].month_key);
+        if (leaveMeta) months[leaveMeta.sheetName] = true;
+      }
+
+      if (!Object.keys(months).length) {
+        months[getCurrentSheetName()] = true;
+      }
+
+      var keys = Object.keys(months).sort(function (a, b) {
+        return monthSortValue_(b) - monthSortValue_(a);
+      });
+
+      var out = [];
+      for (i = 0; i < keys.length; i++) {
+        var meta = getMonthSheetMeta_(keys[i]);
+        out.push({ sheetName: meta.sheetName, label: meta.monthLabel });
+      }
+      return out;
+    }
+
+    async function getInitData() {
+      try {
+        var d = new Date();
+
+        var today = {
+          full: formatDateFull_(d),
+          short: formatDateShort_(d),
+          iso: formatDateISO_(d),
+          day: formatDayName_(d)
+        };
+
+        var sheetName = await ensureCurrentMonthSheet();
+
+        var names = await getFacultyNames_();
+
+        var year = d.getFullYear();
+        var month = d.getMonth();
+        var daysInMonth = new Date(year, month + 1, 0).getDate();
+        var blocked = [];
+        for (var day = 1; day <= daysInMonth; day++) {
+          var dt = new Date(year, month, day);
+          if (isSunday_(dt)) {
+            blocked.push({
+              date: formatDateISO_(dt),
+              reason: "Sunday — Holiday"
+            });
+          }
+        }
+
+        var lm = await getSpecialLeaveDatesMap_(sheetName);
+        for (var key in lm) {
+          if (Object.prototype.hasOwnProperty.call(lm, key)) {
+            blocked.push({ date: key, reason: "🏖️ " + lm[key] });
+          }
+        }
+
+        return {
+          ok: true,
+          today: today,
+          names: names,
+          sheetName: sheetName,
+          blocked: blocked,
+          appVersion: APP_VERSION,
+          reportMonths: await getMonthlySheetOptions_()
+        };
+      } catch (e) {
+        return { ok: false, msg: e.toString() };
+      }
+    }
+
+    async function getRowData(name, dateStr) {
+      try {
+        var dateInfo = parseDateInput_(dateStr);
+        if (!dateInfo) return { ok: false, msg: "Invalid date." };
+
+        var dateObj = dateInfo.dateObj;
+        if (isSunday_(dateObj)) return { ok: false, msg: "Sunday — no data." };
+
+        var lm = await getSpecialLeaveDatesMap_(dateInfo.sheetName);
+        if (lm[dateStr]) {
+          return { ok: true, found: false, blocked: true, reason: "Special Leave: " + lm[dateStr] };
+        }
+
+        var rows = await getFacultyRows_();
+        var faculty = findFacultyRecord_(name, rows);
+        if (!faculty) return { ok: true, found: false };
+
+        var attendanceRows = await getAttendanceRowsForFacultyMonth_(faculty.name, dateInfo.sheetName);
+        var map = getAttendanceMapByFacultyAndDate_(attendanceRows);
+        var row = map[String(faculty.name || "").trim().toLowerCase()]
+          ? map[String(faculty.name || "").trim().toLowerCase()][dateStr]
+          : null;
+
+        if (!row) return { ok: true, found: false };
+
+        var status = String(row.status || "").trim();
+        if (!status) return { ok: true, found: false };
+
+        var slots = normalizeSlots_(row.slots);
+        return {
+          ok: true,
+          found: true,
+          status: status,
+          s0: slots[0],
+          s1: slots[1],
+          s2: slots[2],
+          s3: slots[3],
+          s4: slots[4],
+          s5: slots[5],
+          s6: slots[6]
+        };
+      } catch (e) {
+        return { ok: false, msg: e.toString() };
+      }
+    }
+
+    async function saveRow(name, dateStr, status, slots) {
+      try {
+        if (!name) return { ok: false, msg: "Name empty." };
+        if (!dateStr) return { ok: false, msg: "Date required." };
+        if (!status || (status !== "Present" && status !== "Absent")) {
+          return { ok: false, msg: "Select Present or Absent." };
+        }
+
+        var dateInfo = parseDateInput_(dateStr);
+        if (!dateInfo) return { ok: false, msg: "Invalid date." };
+        if (isSunday_(dateInfo.dateObj)) return { ok: false, msg: "Cannot fill on Sunday." };
+
+        var lm = await getSpecialLeaveDatesMap_(dateInfo.sheetName);
+        if (lm[dateStr]) return { ok: false, msg: "Special Leave: " + lm[dateStr] + " — blocked." };
+
+        var rows = await getFacultyRows_();
+        var faculty = findFacultyRecord_(name, rows);
+        if (!faculty) return { ok: false, msg: "Faculty not found." };
+
+        var s = slots || [];
+        var slotValues = [
+          String(s[0] || "").trim(), String(s[1] || "").trim(), String(s[2] || "").trim(),
+          String(s[3] || "").trim(), String(s[4] || "").trim(), String(s[5] || "").trim(),
+          String(s[6] || "").trim()
+        ];
+
+        if (status === "Absent") {
+          slotValues = ["", "", "", "", "", "", ""];
+        }
+
+        await supabaseUpsertRows_(ATTENDANCE_TABLE, [{
+          faculty_name: faculty.name,
+          month_key: dateInfo.sheetName,
+          entry_date: dateStr,
+          status: status,
+          slots: slotValues
+        }], "faculty_name,entry_date");
+
+        return { ok: true };
+      } catch (e) {
+        return { ok: false, msg: e.toString() };
+      }
+    }
+
+    async function getFacultyStats(name) {
+      try {
+        var currentMeta = getMonthSheetMeta_(getCurrentSheetName());
+        var rows = await getFacultyRows_();
+        var faculty = findFacultyRecord_(name, rows);
+        if (!faculty) return { ok: true, found: false };
+
+        var now = new Date();
+        var year = now.getFullYear();
+        var month = now.getMonth();
+        var tillISO = getCutoffInfo_().cutoffISO;
+        var daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        var currentMonthKey = currentMeta.sheetName;
+        var currentLeaves = await getSpecialLeaveDatesMap_(currentMonthKey);
+        var currentRows = await getAttendanceRowsForFacultyMonth_(faculty.name, currentMonthKey);
+        var currentMap = getAttendanceMapByDate_(currentRows);
+
+        var workingDays = 0;
+        var workingDaysTillToday = 0;
+        var presentDays = 0;
+        var absentDays = 0;
+        var absentDaysTillToday = 0;
+        var totalFilled = 0;
+        var entries = [];
+
+        for (var day = 1; day <= daysInMonth; day++) {
+          var dt = new Date(year, month, day);
+          var ds = formatDateISO_(dt);
+          if (isSunday_(dt)) continue;
+          if (currentLeaves[ds]) continue;
+
+          workingDays++;
+          if (ds <= tillISO) workingDaysTillToday++;
+
+          var row = currentMap[ds] || null;
+          var status = row ? String(row.status || "").trim() : "";
+          var slots = row ? normalizeSlots_(row.slots) : ["", "", "", "", "", "", ""];
+          var filled = countFilledSlots_(slots);
+          var isTillToday = ds <= tillISO;
+
+          if (status === "Present") {
+            presentDays++;
+            if (isTillToday) totalFilled += filled;
+          } else if (status === "Absent") {
+            absentDays++;
+            if (isTillToday) absentDaysTillToday++;
+          }
+
+          entries.push({
+            date: ds,
+            dayLabel: day + " " + DAY_NAMES[dt.getDay()],
+            status: status || "",
+            filled: filled,
+            slots: slots,
+            isLeave: false,
+            leaveRemarks: ""
+          });
+        }
+
+        var recentStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 2);
+        if (recentStart.getFullYear() !== year || recentStart.getMonth() !== month) {
+          var prevMonthKey = getSheetNameForYearMonth_(recentStart.getFullYear(), recentStart.getMonth());
+          var prevLeaves = await getSpecialLeaveDatesMap_(prevMonthKey);
+          var prevRows = await getAttendanceRowsForFacultyMonth_(faculty.name, prevMonthKey);
+          var prevMap = getAttendanceMapByDate_(prevRows);
+          var prevDaysInMonth = new Date(recentStart.getFullYear(), recentStart.getMonth() + 1, 0).getDate();
+
+          for (var prevDay = recentStart.getDate(); prevDay <= prevDaysInMonth; prevDay++) {
+            var prevDt = new Date(recentStart.getFullYear(), recentStart.getMonth(), prevDay);
+            var prevIso = formatDateISO_(prevDt);
+            if (isSunday_(prevDt)) continue;
+            if (prevLeaves[prevIso]) continue;
+
+            var prevRow = prevMap[prevIso] || null;
+            var prevStatus = prevRow ? String(prevRow.status || "").trim() : "";
+            var prevSlots = prevRow ? normalizeSlots_(prevRow.slots) : ["", "", "", "", "", "", ""];
+            var prevFilled = countFilledSlots_(prevSlots);
+
+            entries.push({
+              date: prevIso,
+              dayLabel: prevDay + " " + DAY_NAMES[prevDt.getDay()],
+              status: prevStatus || "",
+              filled: prevFilled,
+              slots: prevSlots,
+              isLeave: false,
+              leaveRemarks: ""
+            });
+          }
+        }
+
+        var eligibleDays = workingDaysTillToday - absentDaysTillToday;
+        if (eligibleDays < 0) eligibleDays = 0;
+        var totalSlots = eligibleDays * 7;
+        var fillRate = totalSlots > 0 ? Math.round((totalFilled / totalSlots) * 100) : 100;
+
+        return {
+          ok: true,
+          found: true,
+          name: faculty.name,
+          entries: entries,
+          workingDays: workingDays,
+          workingDaysTillToday: workingDaysTillToday,
+          presentDays: presentDays,
+          absentDays: absentDays,
+          totalFilled: totalFilled,
+          totalSlots: totalSlots,
+          fillRate: fillRate
+        };
+      } catch (e) {
+        return { ok: false, msg: e.toString() };
+      }
+    }
+
+    async function getMonthlyReport(sheetName) {
+      try {
+        var monthMeta = getMonthSheetMeta_(sheetName);
+        var rows = await getFacultyRows_();
+        var currentMonthMeta = getMonthSheetMeta_(getCurrentSheetName());
+
+        var tillISO;
+        if (monthMeta.year === currentMonthMeta.year && monthMeta.month === currentMonthMeta.month) {
+          tillISO = getCutoffInfo_().cutoffISO;
+        } else if (
+          monthMeta.year < currentMonthMeta.year ||
+          (monthMeta.year === currentMonthMeta.year && monthMeta.month < currentMonthMeta.month)
+        ) {
+          tillISO = formatDateISO_(new Date(monthMeta.year, monthMeta.month + 1, 0));
+        } else {
+          tillISO = formatDateISO_(new Date(monthMeta.year, monthMeta.month, 0));
+        }
+
+        var daysInMonth = new Date(monthMeta.year, monthMeta.month + 1, 0).getDate();
+        var dates = [];
+        var workingDaysTotal = 0;
+        var workingDaysTillToday = 0;
+        var leaves = await getSpecialLeaveDatesMap_(monthMeta.sheetName);
+
+        for (var day = 1; day <= daysInMonth; day++) {
+          var dt = new Date(monthMeta.year, monthMeta.month, day);
+          var ds = formatDateISO_(dt);
+          var isSun = isSunday_(dt);
+          var isLeave = !!leaves[ds];
+          var isWork = !isSun && !isLeave;
+          if (isWork) {
+            workingDaysTotal++;
+            if (ds <= tillISO) workingDaysTillToday++;
+          }
+          dates.push({
+            date: ds,
+            day: day,
+            dayName: DAY_NAMES[dt.getDay()],
+            isSunday: isSun,
+            isLeave: isLeave,
+            leaveRemarks: isLeave ? leaves[ds] : "",
+            isWorking: isWork
+          });
+        }
+
+        var attendanceRows = await getAttendanceRowsForMonth_(monthMeta.sheetName);
+        var attendanceMap = getAttendanceMapByFacultyAndDate_(attendanceRows);
+        var faculties = [];
+
+        for (var i = 0; i < rows.length; i++) {
+          var nm = String(rows[i].name || "").trim();
+          if (!nm) continue;
+
+          var nmKey = nm.toLowerCase();
+          var days = [];
+          var presentCount = 0;
+          var absentCount = 0;
+          var filledTotal = 0;
+          var absentTillToday = 0;
+
+          for (var dayIdx = 0; dayIdx < dates.length; dayIdx++) {
+            var info = dates[dayIdx];
+            if (info.isSunday) {
+              days.push({ date: info.date, status: "SUN", filled: 0, slots: [] });
+              continue;
+            }
+            if (info.isLeave) {
+              days.push({ date: info.date, status: "LEAVE", filled: 0, slots: [] });
+              continue;
+            }
+
+            var row = (attendanceMap[nmKey] && attendanceMap[nmKey][info.date]) ? attendanceMap[nmKey][info.date] : null;
+            var status = row ? String(row.status || "").trim() : "";
+            var slots = row ? normalizeSlots_(row.slots) : ["", "", "", "", "", "", ""];
+            var filled = countFilledSlots_(slots);
+            var isTillToday = info.date <= tillISO;
+
+            if (status === "Present") {
+              presentCount++;
+              if (isTillToday) filledTotal += filled;
+            } else if (status === "Absent") {
+              absentCount++;
+              if (isTillToday) absentTillToday++;
+            }
+
+            days.push({ date: info.date, status: status || "", filled: filled, slots: slots });
+          }
+
+          var eligibleDays = workingDaysTillToday - absentTillToday;
+          if (eligibleDays < 0) eligibleDays = 0;
+          var slotsTotal = eligibleDays * 7;
+          var fillRate = slotsTotal > 0 ? Math.round((filledTotal / slotsTotal) * 100) : 100;
+
+          faculties.push({
+            name: nm,
+            days: days,
+            present: presentCount,
+            absent: absentCount,
+            filledTotal: filledTotal,
+            fillRate: fillRate
+          });
+        }
+
+        return {
+          ok: true,
+          faculties: faculties,
+          dates: dates,
+          monthLabel: monthMeta.monthLabel,
+          sheetName: monthMeta.sheetName,
+          workingDaysTotal: workingDaysTotal,
+          workingDaysTillToday: workingDaysTillToday
+        };
+      } catch (e) {
+        return { ok: false, msg: e.toString() };
+      }
+    }
+
+    async function getReport(dateStr) {
+      try {
+        var dateInfo = parseDateInput_(dateStr);
+        if (!dateInfo) return { ok: false, msg: "Invalid date." };
+
+        var dateObj = dateInfo.dateObj;
+        if (isSunday_(dateObj)) return { ok: false, msg: "Sunday — no data columns." };
+
+        var leaves = await getSpecialLeaveDatesMap_(dateInfo.sheetName);
+        var isLeave = !!leaves[dateStr];
+        var leaveRemarks = leaves[dateStr] || "";
+
+        var rows = await getFacultyRows_();
+        var attendanceRows = await getAttendanceRowsForDate_(dateStr);
+        var attendanceMap = getAttendanceMapByFaculty_(attendanceRows);
+
+        var emptyReport = {
+          ok: true,
+          rows: [],
+          present: 0,
+          absent: 0,
+          notFilled: 0,
+          total: 0,
+          slotTotals: [0, 0, 0, 0, 0, 0, 0],
+          isLeave: isLeave,
+          leaveRemarks: leaveRemarks
+        };
+
+        if (!rows.length) return emptyReport;
+
+        var reportRows = [];
+        var present = 0;
+        var absent = 0;
+        var notFilled = 0;
+        var slotTotals = [0, 0, 0, 0, 0, 0, 0];
+
+        for (var i = 0; i < rows.length; i++) {
+          var nm = String(rows[i].name || "").trim();
+          if (!nm) continue;
+
+          var nmKey = nm.toLowerCase();
+          var row = attendanceMap[nmKey] || null;
+          var status = row ? String(row.status || "").trim() : "";
+          var slots = row ? normalizeSlots_(row.slots) : ["", "", "", "", "", "", ""];
+          var filled = 0;
+
+          for (var j = 0; j < 7; j++) {
+            var v = String(slots[j] || "").trim();
+            if (v) {
+              filled++;
+              slotTotals[j]++;
+            }
+          }
+
+          if (status === "Present") present++;
+          else if (status === "Absent") absent++;
+          if (status !== "Absent" && filled < 7) notFilled++;
+
+          reportRows.push({
+            name: nm,
+            status: status || "—",
+            filled: filled,
+            slots: slots
+          });
+        }
+
+        return {
+          ok: true,
+          rows: reportRows,
+          present: present,
+          absent: absent,
+          notFilled: notFilled,
+          total: reportRows.length,
+          slotTotals: slotTotals,
+          isLeave: isLeave,
+          leaveRemarks: leaveRemarks
+        };
+      } catch (e) {
+        return { ok: false, msg: e.toString() };
+      }
+    }
+
+    async function getSpecialLeaves() {
+      try {
+        var monthKey = getCurrentSheetName();
+        var rows = await getSpecialLeavesRows_(monthKey);
+        var leaves = [];
+        for (var i = 0; i < rows.length; i++) {
+          leaves.push({
+            date: normalizeDate_(rows[i].leave_date),
+            remarks: String(rows[i].remarks || "").trim()
+          });
+        }
+        leaves.sort(function (a, b) { return a.date.localeCompare(b.date); });
+        return { ok: true, leaves: leaves };
+      } catch (e) {
+        return { ok: false, msg: e.toString() };
+      }
+    }
+
+    async function addSpecialLeave(dateStr, remarks) {
+      try {
+        if (!dateStr) return { ok: false, msg: "Date required." };
+        if (!remarks) return { ok: false, msg: "Remarks required." };
+
+        var dateInfo = parseDateInput_(dateStr);
+        if (!dateInfo) return { ok: false, msg: "Invalid date." };
+        if (isSunday_(dateInfo.dateObj)) return { ok: false, msg: "Already a Sunday." };
+
+        var monthKey = getCurrentSheetName();
+        await supabaseUpsertRows_(LEAVES_TABLE, [{
+          month_key: monthKey,
+          leave_date: dateStr,
+          remarks: String(remarks).trim()
+        }], "month_key,leave_date");
+
+        return { ok: true };
+      } catch (e) {
+        return { ok: false, msg: e.toString() };
+      }
+    }
+
+    async function removeSpecialLeave(dateStr) {
+      try {
+        var monthKey = getCurrentSheetName();
+        await supabaseDeleteRows_(LEAVES_TABLE, {
+          month_key: "eq." + monthKey,
+          leave_date: "eq." + dateStr
+        });
+        return { ok: true };
+      } catch (e) {
+        return { ok: false, msg: e.toString() };
+      }
+    }
+
+    async function saveFeedback(name, feedbackText) {
+      try {
+        if (!name) return { ok: false, msg: "Name required." };
+        if (!feedbackText || !String(feedbackText).trim()) {
+          return { ok: false, msg: "Feedback cannot be empty." };
+        }
+
+        var monthLabel = getCurrentSheetName();
+
+        await supabaseInsertRows_(FEEDBACK_TABLE, [{
+          faculty_name: String(name).trim(),
+          feedback: String(feedbackText).trim(),
+          month_key: monthLabel
+        }]);
+
+        return { ok: true };
+      } catch (e) {
+        return { ok: false, msg: e.toString() };
+      }
+    }
+
+    async function getMissedDates(name) {
+      try {
+        var rows = await getFacultyRows_();
+        var faculty = findFacultyRecord_(name, rows);
+        if (!faculty) return { ok: true, missed: [] };
+
+        var now = new Date();
+        var year = now.getFullYear();
+        var month = now.getMonth();
+        var todayISO = formatDateISO_(now);
+        var daysInMonth = new Date(year, month + 1, 0).getDate();
+        var currentMonthKey = getCurrentSheetName();
+
+        var currentLeaves = await getSpecialLeaveDatesMap_(currentMonthKey);
+        var currentRows = await getAttendanceRowsForFacultyMonth_(faculty.name, currentMonthKey);
+        var currentMap = getAttendanceMapByDate_(currentRows);
+        var missed = [];
+
+        for (var day = 1; day <= daysInMonth; day++) {
+          var dt = new Date(year, month, day);
+          var ds = formatDateISO_(dt);
+          if (ds >= todayISO) continue;
+          if (isSunday_(dt)) continue;
+          if (currentLeaves[ds]) continue;
+
+          var row = currentMap[ds] || null;
+          var status = row ? String(row.status || "").trim() : "";
+          if (!status) {
+            missed.push({
+              date: ds,
+              dayLabel: day + " " + DAY_NAMES[dt.getDay()]
+            });
+          }
+        }
+
+        var recentStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 2);
+        if (recentStart.getFullYear() !== year || recentStart.getMonth() !== month) {
+          var prevMonthKey = getSheetNameForYearMonth_(recentStart.getFullYear(), recentStart.getMonth());
+          var prevLeaves = await getSpecialLeaveDatesMap_(prevMonthKey);
+          var prevRows = await getAttendanceRowsForFacultyMonth_(faculty.name, prevMonthKey);
+          var prevMap = getAttendanceMapByDate_(prevRows);
+          var prevDaysInMonth = new Date(recentStart.getFullYear(), recentStart.getMonth() + 1, 0).getDate();
+
+          for (var prevDay = recentStart.getDate(); prevDay <= prevDaysInMonth; prevDay++) {
+            var prevDt = new Date(recentStart.getFullYear(), recentStart.getMonth(), prevDay);
+            var prevIso = formatDateISO_(prevDt);
+            if (prevIso >= todayISO) continue;
+            if (isSunday_(prevDt)) continue;
+            if (prevLeaves[prevIso]) continue;
+
+            var prevRow = prevMap[prevIso] || null;
+            var prevStatus = prevRow ? String(prevRow.status || "").trim() : "";
+            if (!prevStatus) {
+              missed.push({
+                date: prevIso,
+                dayLabel: prevDay + " " + DAY_NAMES[prevDt.getDay()]
+              });
+            }
+          }
+        }
+
+        missed.sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
+
+        return { ok: true, missed: missed };
+      } catch (e) {
+        return { ok: false, msg: e.toString() };
+      }
+    }
+
+    async function getUnfilledForDate_(dateStr) {
+      var dateInfo = parseDateInput_(dateStr);
+      if (!dateInfo) return { ok: false, msg: "Invalid date." };
+
+      var dateObj = dateInfo.dateObj;
+      if (isSunday_(dateObj)) {
+        return { ok: true, date: dateStr, skipped: true, reason: "Sunday" };
+      }
+
+      var lm = await getSpecialLeaveDatesMap_(dateInfo.sheetName);
+      if (lm[dateStr]) {
+        return { ok: true, date: dateStr, skipped: true, reason: "Special Leave: " + lm[dateStr] };
+      }
+
+      var rows = await getFacultyRows_();
+      var attendanceRows = await getAttendanceRowsForDate_(dateStr);
+      var attendanceMap = getAttendanceMapByFaculty_(attendanceRows);
+      var names = [];
+
+      for (var i = 0; i < rows.length; i++) {
+        var nm = String(rows[i].name || "").trim();
+        if (!nm) continue;
+
+        var row = attendanceMap[nm.toLowerCase()] || null;
+        var status = row ? String(row.status || "").trim() : "";
+        var slots = row ? normalizeSlots_(row.slots) : ["", "", "", "", "", "", ""];
+        var filled = countFilledSlots_(slots);
+
+        if (status !== "Absent" && filled < 7) names.push(nm);
+      }
+
+      return { ok: true, date: dateStr, names: names };
+    }
+
+    async function getUnfilledForYesterday() {
+      try {
+        return await getUnfilledForDate_(getYesterdayISO_());
+      } catch (e) {
+        return { ok: false, msg: e.toString() };
+      }
+    }
+
+    async function getUnfilledForTodayAfterCutoff() {
+      try {
+        var now = new Date();
+        var cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate(), CUTOFF_HOUR, CUTOFF_MIN, 0, 0);
+        var todayISO = formatDateISO_(now);
+
+        if (now.getTime() < cutoff.getTime()) {
+          return { ok: true, date: todayISO, skipped: true, reason: "Before cutoff" };
+        }
+
+        return await getUnfilledForDate_(todayISO);
+      } catch (e) {
+        return { ok: false, msg: e.toString() };
+      }
+    }
+
+    async function getUnfilledTillYesterday(sheetName) {
+      try {
+        var monthMeta = getMonthSheetMeta_(sheetName);
+        var yIso = getYesterdayISO_();
+        var monthStart = new Date(monthMeta.year, monthMeta.month, 1);
+        var monthEnd = new Date(monthMeta.year, monthMeta.month + 1, 0);
+        var monthStartISO = formatDateISO_(monthStart);
+        var monthEndISO = formatDateISO_(monthEnd);
+
+        if (yIso < monthStartISO) {
+          return {
+            ok: true,
+            sheetName: monthMeta.sheetName,
+            monthLabel: monthMeta.monthLabel,
+            tillDate: yIso,
+            names: [],
+            missing: [],
+            skipped: true,
+            reason: "Selected month is in the future."
+          };
+        }
+
+        var tillISO = (yIso < monthEndISO) ? yIso : monthEndISO;
+        var tillInfo = parseDateInput_(tillISO);
+        var tillDay = tillInfo ? tillInfo.day : monthEnd.getDate();
+        var rows = await getFacultyRows_();
+        var attendanceRows = await getAttendanceRowsForMonth_(monthMeta.sheetName);
+        var attendanceMap = getAttendanceMapByFacultyAndDate_(attendanceRows);
+        var leaves = await getSpecialLeaveDatesMap_(monthMeta.sheetName);
+
+        var dayInfo = [];
+        for (var day = 1; day <= tillDay; day++) {
+          var dt = new Date(monthMeta.year, monthMeta.month, day);
+          var ds = formatDateISO_(dt);
+          var isWork = !isSunday_(dt) && !leaves[ds];
+          dayInfo.push({ isWork: isWork, startIdx: day, date: ds });
+        }
+
+        var names = [];
+        var missing = [];
+
+        for (var i = 0; i < rows.length; i++) {
+          var nm = String(rows[i].name || "").trim();
+          if (!nm) continue;
+
+          var nmKey = nm.toLowerCase();
+          var hasMissing = false;
+          var missingDates = [];
+
+          for (var di = 0; di < dayInfo.length; di++) {
+            var info = dayInfo[di];
+            if (!info.isWork) continue;
+
+            var row = (attendanceMap[nmKey] && attendanceMap[nmKey][info.date]) ? attendanceMap[nmKey][info.date] : null;
+            var status = row ? String(row.status || "").trim() : "";
+            var slots = row ? normalizeSlots_(row.slots) : ["", "", "", "", "", "", ""];
+            var filled = countFilledSlots_(slots);
+
+            if (status !== "Absent" && filled < 7) {
+              hasMissing = true;
+              missingDates.push(info.date);
+            }
+          }
+
+          if (hasMissing) {
+            names.push(nm);
+            missing.push({ name: nm, dates: missingDates });
+          }
+        }
+
+        return {
+          ok: true,
+          sheetName: monthMeta.sheetName,
+          monthLabel: monthMeta.monthLabel,
+          tillDate: tillISO,
+          names: names,
+          missing: missing
+        };
+      } catch (e) {
+        return { ok: false, msg: e.toString() };
+      }
+    }
+
+    function createGoogleScriptRunner_(api) {
+      var success = null;
+      var failure = null;
+      var runner = {
+        withSuccessHandler: function (fn) { success = fn; return runner; },
+        withFailureHandler: function (fn) { failure = fn; return runner; }
+      };
+
+      Object.keys(api).forEach(function (name) {
+        runner[name] = function () {
+          var args = arguments;
+          Promise.resolve()
+            .then(function () { return api[name].apply(null, args); })
+            .then(function (res) { if (success) success(res); })
+            .catch(function (err) {
+              var error = (err instanceof Error) ? err : new Error(String(err));
+              if (failure) failure(error); else console.error(error);
+            });
+        };
+      });
+
+      return runner;
+    }
+
+    (function () {
+      var api = {
+        getInitData: getInitData,
+        verifyFacultyPassword: verifyFacultyPassword,
+        resetFacultyPassword: resetFacultyPassword,
+        verifyAdmin: verifyAdmin,
+        getRowData: getRowData,
+        saveRow: saveRow,
+        getFacultyStats: getFacultyStats,
+        getSpecialLeaves: getSpecialLeaves,
+        addSpecialLeave: addSpecialLeave,
+        removeSpecialLeave: removeSpecialLeave,
+        getReport: getReport,
+        getMonthlyReport: getMonthlyReport,
+        getMissedDates: getMissedDates,
+        getUnfilledForTodayAfterCutoff: getUnfilledForTodayAfterCutoff,
+        getUnfilledTillYesterday: getUnfilledTillYesterday,
+        saveFeedback: saveFeedback
+      };
+
+      if (!window.google) window.google = {};
+      if (!window.google.script) window.google.script = {};
+      Object.defineProperty(window.google.script, "run", {
+        get: function () { return createGoogleScriptRunner_(api); }
+      });
+    })();
+    /* ════════════════════════════════════════════
+       STATE
+       ════════════════════════════════════════════ */
+    var SLOTS = ["9-10 AM", "10-11 AM", "11-12 PM", "12-1 PM", "2-3 PM", "3-4 PM", "4-5 PM"];
+    var DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    var SHORT_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    var curStatus = "", allRows = [], filtRows = [], toastTmr;
+    var curFilter = "all";
+    var isAdmin = false, loggedFaculty = null, pendingTab = null, pendingBtn = null;
+    var todayISO = "", blockedDates = {};
+    var monthlyData = null;
+    var currentSheetName = "";
+    var _moFilterTmr = null;
+    var _moTooltipBound = false;
+    var appVersion = "";
+    var reportMissingDailyShownFor = "";
+    var reportMissingMonthlyShownFor = "";
+    var reportMissingItems = [];
+    var reportMissingTitle = "";
+    var reportMissingSub = "";
+    var _cutoffTimer = null;
+    var CUTOFF_HOUR = 16;
+    var CUTOFF_MIN = 30;
+    var latestFacultyStats = null;
+
+    /* ════════════════════════════════════════════
+       INIT — Single combined call
+       ════════════════════════════════════════════ */
+    window.onload = function () {
+      buildSlots();
+      // Re-build slots only when width changes (avoid mobile keyboard resize)
+      var _resizeTmr;
+      var _lastW = window.innerWidth;
+      window.addEventListener('resize', function () {
+        var w = window.innerWidth;
+        var widthChanged = Math.abs(w - _lastW) > 40;
+        _lastW = w;
+        if (!widthChanged) return;
+
+        clearTimeout(_resizeTmr);
+        _resizeTmr = setTimeout(function () {
+          var vals = []; for (var i = 0; i < 7; i++) { var el = gel('sl' + i); vals.push(el ? el.value : ''); }
+          buildSlots();
+          for (var i = 0; i < 7; i++) { var el = gel('sl' + i); if (el) el.value = vals[i]; }
+        }, 300);
+      });
+      gel("loginPass").addEventListener("keydown", function (e) { if (e.key === "Enter") doAdminLogin(); });
+      gel("loginUser").addEventListener("keydown", function (e) { if (e.key === "Enter") gel("loginPass").focus(); });
+      gel("resetConfirmPass").addEventListener("keydown", function (e) { if (e.key === "Enter") doResetPassword(); });
+      // Feedback character counter
+      gel("feedbackText").addEventListener("input", function () { gel("fbCharCount").textContent = this.value.length + " / 1000"; });
+
+      // Single init call replaces 3 separate calls
+      google.script.run.withSuccessHandler(function (r) {
+        hide("loader");
+        if (!r.ok) { toast(r.msg || "Init failed", "er"); return; }
+
+        // Today
+        todayISO = r.today.iso;
+        gel("dateBadge").textContent = "📅 " + r.today.full;
+        gel("entryDate").value = r.today.iso;
+        gel("reportDate").value = r.today.iso;
+
+        // Sheet
+        currentSheetName = r.sheetName || "";
+        gel("headerSub").textContent = (r.sheetName || "Sheet") + " — Attendance & Time Slot Tracker";
+        gel("sheetBadge").textContent = "📄 " + (r.sheetName || "Sheet");
+        populateMonthlySheetOptions(r.reportMonths || [], currentSheetName);
+
+        // App version
+        appVersion = r.appVersion || "";
+
+        // Blocked dates
+        blockedDates = {};
+        r.blocked.forEach(function (b) { blockedDates[b.date] = b.reason; });
+
+        // Faculty names — populate selects
+        var sels = [gel("selFacEntry"), gel("resetName")];
+        r.names.forEach(function (n) { sels.forEach(function (s) { addOpt(s, n); }); });
+
+        gel("panel-entry").classList.add("on");
+
+        // Auto-login from saved session
+        tryAutoLogin();
+      }).withFailureHandler(function (e) {
+        gel("loader").textContent = "❌ " + e.message;
+      }).getInitData();
+    };
+
+    /* ════════════════════════════════════════════
+       HELPERS
+       ════════════════════════════════════════════ */
+    function gel(id) { return document.getElementById(id); }
+    function addOpt(sel, val) { var o = document.createElement("option"); o.value = val; o.textContent = val; sel.appendChild(o); }
+    function addOptLabeled(sel, val, label) { var o = document.createElement("option"); o.value = val; o.textContent = label || val; sel.appendChild(o); }
+
+    function populateMonthlySheetOptions(options, selectedSheetName) {
+      var sel = gel("moSheetMonth");
+      if (!sel) return;
+
+      sel.innerHTML = "";
+      if (!options || !options.length) {
+        if (selectedSheetName) addOptLabeled(sel, selectedSheetName, selectedSheetName);
+        else addOptLabeled(sel, "", "Select month sheet");
+        sel.value = selectedSheetName || "";
+        return;
+      }
+
+      for (var i = 0; i < options.length; i++) {
+        addOptLabeled(sel, options[i].sheetName, options[i].label);
+      }
+      sel.value = selectedSheetName || options[0].sheetName;
+    }
+
+    function show(id) {
+      var e = gel(id); if (!e) return;
+      if (e.classList.contains("panel")) { e.classList.add("on"); e.style.display = ""; }
+      else e.style.display = "";
+    }
+    function hide(id) {
+      var e = gel(id); if (!e) return;
+      if (e.classList.contains("panel")) { e.classList.remove("on"); e.style.display = ""; }
+      else e.style.display = "none";
+    }
+
+    function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+    function initials(name) { return name.replace(/^(Mr\.|Ms\.|Dr\.)\s*/i, "").split(" ").slice(0, 2).map(function (w) { return w[0] || ""; }).join("").toUpperCase() || "?"; }
+    function fmtDate(ds) { if (!ds) return "—"; var p = ds.split("-"); if (p.length !== 3) return ds; var m = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]; return parseInt(p[2]) + " " + m[parseInt(p[1]) - 1] + " " + p[0]; }
+    function getDayName(ds) { var p = ds.split("-"); var d = new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2])); return DAY_NAMES[d.getDay()]; }
+    function getShortDay(ds) { var p = ds.split("-"); var d = new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2])); return SHORT_DAYS[d.getDay()]; }
+    function formatMissingDatesList(dates) {
+      if (!dates || !dates.length) return "";
+      return dates.map(function (ds) {
+        return fmtDate(ds) + " (" + getShortDay(ds) + ")";
+      }).join(", ");
+    }
+    function buildReportMissingCopyText() {
+      if (!reportMissingItems || !reportMissingItems.length) return "";
+      var lines = [];
+      if (reportMissingTitle) lines.push(reportMissingTitle);
+      if (reportMissingSub) lines.push(reportMissingSub);
+      lines.push("");
+      reportMissingItems.forEach(function (item) {
+        var name = (typeof item === "string") ? item : (item && item.name) ? item.name : "";
+        var dates = (item && item.dates) ? item.dates : [];
+        var dateText = formatMissingDatesList(dates);
+        if (!dateText && item && item.date) dateText = fmtDate(item.date) + " (" + getShortDay(item.date) + ")";
+        lines.push(dateText ? (dateText + " - " + name) : name);
+      });
+      return lines.join("\n");
+    }
+    function copyReportMissing() {
+      var text = buildReportMissingCopyText();
+      if (!text) { toast("Nothing to copy", "er"); return; }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function () {
+          toast("✅ Copied list", "ok");
+        }).catch(function () {
+          fallbackCopyText_(text);
+        });
+        return;
+      }
+      fallbackCopyText_(text);
+    }
+    function fallbackCopyText_(text) {
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand("copy");
+        toast("✅ Copied list", "ok");
+      } catch (e) {
+        toast("Copy failed", "er");
+      }
+      document.body.removeChild(ta);
+    }
+    function isBlocked(ds) { if (!ds) return false; if (blockedDates[ds]) return true; var p = ds.split("-"); var d = new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2])); return d.getDay() === 0; }
+    function refreshBlockedDates() {
+      google.script.run.withSuccessHandler(function (r) {
+        if (!r.ok) return;
+        // Re-derive blocked from new initData
+        blockedDates = {}; r.blocked.forEach(function (b) { blockedDates[b.date] = b.reason; });
+      }).withFailureHandler(function () { }).getInitData();
+    }
+
+    function findStatsEntry_(entries, dateStr) {
+      if (!entries || !entries.length || !dateStr) return null;
+      for (var i = 0; i < entries.length; i++) {
+        if (entries[i] && entries[i].date === dateStr) return entries[i];
+      }
+      return null;
+    }
+
+    function syncSelectedEntryFromStats_(stats, dateStr) {
+      if (!stats || !stats.ok || !stats.found || !loggedFaculty) return;
+
+      var ds = dateStr || gel("entryDate").value;
+      if (!ds) return;
+
+      resetEntry();
+
+      if (isBlocked(ds)) {
+        var reason = blockedDates[ds] || "Sunday — Holiday";
+        gel("noticeBlocked").textContent = "⛔ " + reason + " — entry not allowed.";
+        gel("noticeBlocked").style.display = "block";
+        gel("statusCard").style.display = "none";
+        gel("btnSubmit").style.display = "none";
+        return;
+      }
+
+      var entry = findStatsEntry_(stats.entries, ds);
+      if (!entry || !entry.status) {
+        toast("No existing entry — fill new", "in");
+        return;
+      }
+
+      pickStatus(entry.status);
+      var slots = entry.slots || [];
+      for (var i = 0; i < 7; i++) {
+        var el = gel("sl" + i);
+        if (el) el.value = slots[i] || "";
+      }
+      gel("noticeEdit").style.display = "block";
+      toast("Entry loaded ✓", "ok");
+    }
+
+    function renderFacultyDashboard_(r, dateStr) {
+      if (!r || !r.ok || !r.found) return;
+
+      latestFacultyStats = r;
+      gel("esWorking").textContent = r.workingDays;
+      gel("esPresent").textContent = r.presentDays;
+      gel("esAbsent").textContent = r.absentDays;
+      gel("esFill").textContent = r.fillRate + "%";
+      show("entryStats");
+      renderMyEntries(r);
+      syncSelectedEntryFromStats_(r, dateStr);
+    }
+
+    function refreshFacultyDashboard(dateStr) {
+      if (!loggedFaculty) return;
+      google.script.run.withSuccessHandler(function (r) {
+        renderFacultyDashboard_(r, dateStr || gel("entryDate").value);
+      }).withFailureHandler(function () { }).getFacultyStats(loggedFaculty);
+    }
+
+    function getCutoffTime_() {
+      var now = new Date();
+      return new Date(now.getFullYear(), now.getMonth(), now.getDate(), CUTOFF_HOUR, CUTOFF_MIN, 0, 0);
+    }
+
+    function scheduleCutoffLogout() {
+      if (!loggedFaculty) return;
+      clearTimeout(_cutoffTimer);
+      var now = new Date();
+      var cutoff = getCutoffTime_();
+      if (now.getTime() >= cutoff.getTime()) return;
+
+      _cutoffTimer = setTimeout(enforceCutoffLogout, cutoff.getTime() - now.getTime() + 50);
+    }
+
+    function enforceCutoffLogout() {
+      if (!loggedFaculty) return;
+      if (!todayISO || isBlocked(todayISO)) return;
+
+      google.script.run.withSuccessHandler(function (r) {
+        if (!r || !r.ok || !r.found) doFacultyLogout();
+      }).withFailureHandler(function () {
+        doFacultyLogout();
+      }).getRowData(loggedFaculty, todayISO);
+    }
+
+    /* ════════════════════════════════════════════
+       BUILD SLOTS
+       ════════════════════════════════════════════ */
+    function buildSlots() {
+      var g = gel("slotsGrid"), frag = document.createDocumentFragment();
+      var isMobile = window.innerWidth <= 600;
+      SLOTS.forEach(function (s, i) {
+        var d = document.createElement("div"); d.className = "slot-card";
+        if (isMobile) {
+          d.innerHTML = '<div class="slot-time">' + s + '</div><textarea id="sl' + i + '" rows="1" placeholder="e.g. Lecture, Lab, Theory…" autocomplete="off" enterkeyhint="next"></textarea>';
+        } else {
+          d.innerHTML = '<div class="slot-time">' + s + '</div><input type="text" id="sl' + i + '" placeholder="e.g. Lecture" autocomplete="off"/>';
+        }
+        frag.appendChild(d);
+      });
+      g.innerHTML = "";
+      g.appendChild(frag);
+    }
+
+    /* ════════════════════════════════════════════
+       TABS
+       ════════════════════════════════════════════ */
+    function goTab(name, btn) {
+      if (name === "report" && !isAdmin) { pendingTab = name; pendingBtn = btn; showAdminLogin(); return; }
+      document.querySelectorAll(".tab").forEach(function (b) { b.classList.remove("on"); });
+      document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("on"); });
+      btn.classList.add("on");
+      var pan = gel("panel-" + name); if (pan) pan.classList.add("on");
+
+      if (name === "entry" && loggedFaculty) { hide("entryLoginSection"); show("entryFormSection"); }
+      if (name === "entry" && !loggedFaculty) { show("entryLoginSection"); hide("entryFormSection"); }
+      if (name === "report") { loadSpecialLeaves(); if (gel("reportDate").value) loadReport(); }
+    }
+
+    /* ════════════════════════════════════════════
+       REPORT VIEW TOGGLE (Daily / Monthly)
+       ════════════════════════════════════════════ */
+    function switchReportView(view) {
+      gel("togDaily").classList.toggle("active", view === "daily");
+      gel("togMonthly").classList.toggle("active", view === "monthly");
+      gel("dailyReportSection").style.display = view === "daily" ? "" : "none";
+      gel("monthlyReportSection").style.display = view === "monthly" ? "" : "none";
+      if (view === "daily") loadReportMissingDaily();
+      if (view === "monthly" && monthlyData) loadReportMissingMonthly();
+    }
+
+    /* ════════════════════════════════════════════
+       FACULTY NAME CHANGE
+       ════════════════════════════════════════════ */
+    function onFacNameChange() {
+      gel("entryHiddenUser").value = gel("selFacEntry").value;
+    }
+
+    /* ════════════════════════════════════════════
+       FACULTY LOGIN
+       ════════════════════════════════════════════ */
+    function handleEntryLoginSubmit(e) { e.preventDefault(); doFacultyLogin(); return false; }
+
+    function doFacultyLogin() {
+      var name = gel("selFacEntry").value, password = gel("facEntryPass").value.trim();
+      if (!name) { showErr("entryLoginError", "⚠️ Select your name"); return; }
+      if (!password) { showErr("entryLoginError", "⚠️ Enter your password"); return; }
+
+      var btn = gel("entryLoginBtn"); btn.disabled = true; btn.innerHTML = '<span class="spin-sm"></span>Verifying…';
+
+      google.script.run.withSuccessHandler(function (r) {
+        btn.disabled = false; btn.textContent = "🔓 Login";
+        if (r.ok) {
+          loggedFaculty = name;
+          // Save session only when fill rate allows remember
+          try {
+            if (r.allowRemember) localStorage.setItem("fws_session", JSON.stringify({ name: name, pw: password }));
+            else localStorage.removeItem("fws_session");
+          } catch (ex) { }
+          hide("entryLoginSection"); show("entryFormSection");
+          gel("welAvatar").textContent = initials(name);
+          gel("welName").textContent = name;
+          gel("welSub").textContent = "Worksheet Entry — " + gel("sheetBadge").textContent.replace("📄 ", "");
+          refreshFacultyDashboard(gel("entryDate").value);
+          toast("✅ Welcome, " + name, "ok");
+          // Show What's New + Missed Dates
+          checkWhatsNew();
+          checkMissedDates();
+          scheduleCutoffLogout();
+        } else { showErr("entryLoginError", "❌ " + (r.msg || "Invalid")); }
+      }).withFailureHandler(function (e) {
+        btn.disabled = false; btn.textContent = "🔓 Login"; showErr("entryLoginError", "❌ " + e.message);
+      }).verifyFacultyPassword(name, password);
+    }
+
+    function showErr(id, msg) { var el = gel(id); el.textContent = msg; el.style.display = "block"; }
+
+    function doFacultyLogout() {
+      loggedFaculty = null; curStatus = "";
+      clearTimeout(_cutoffTimer); _cutoffTimer = null;
+      // Clear persistent session
+      try { localStorage.removeItem("fws_session"); } catch (ex) { }
+      hide("entryFormSection"); show("entryLoginSection"); hide("myEntriesCard"); hide("entryStats");
+      gel("facEntryPass").value = ""; gel("entryLoginError").style.display = "none";
+      resetEntry();
+      toast("🔒 Logged out", "in");
+    }
+
+    /* ── Auto-login from saved session ── */
+    function tryAutoLogin() {
+      try {
+        var raw = localStorage.getItem("fws_session");
+        if (!raw) return;
+        var sess = JSON.parse(raw);
+        if (!sess.name || !sess.pw) return;
+        // Silently verify the password
+        google.script.run.withSuccessHandler(function (r) {
+          if (r.ok && r.allowRemember) {
+            loggedFaculty = sess.name;
+            gel("selFacEntry").value = sess.name;
+            hide("entryLoginSection"); show("entryFormSection");
+            gel("welAvatar").textContent = initials(sess.name);
+            gel("welName").textContent = sess.name;
+            gel("welSub").textContent = "Worksheet Entry — " + gel("sheetBadge").textContent.replace("📄 ", "");
+            refreshFacultyDashboard(gel("entryDate").value);
+            toast("✅ Welcome back, " + sess.name, "ok");
+            // Show What's New + Missed Dates
+            checkWhatsNew();
+            checkMissedDates();
+            scheduleCutoffLogout();
+          } else {
+            // Stale or disallowed session — clear it
+            localStorage.removeItem("fws_session");
+          }
+        }).withFailureHandler(function () {
+          localStorage.removeItem("fws_session");
+        }).verifyFacultyPassword(sess.name, sess.pw);
+      } catch (ex) { }
+    }
+
+    /* ════════════════════════════════════════════
+       PASSWORD RESET / SET OVERLAY
+       ════════════════════════════════════════════ */
+    function showResetOverlay() {
+      var selVal = gel("selFacEntry").value;
+      if (selVal) gel("resetName").value = selVal;
+      gel("resetDob").value = ""; gel("resetNewPass").value = ""; gel("resetConfirmPass").value = "";
+      gel("resetError").style.display = "none";
+      gel("resetOverlay").classList.add("on");
+      setTimeout(function () { gel("resetDob").focus(); }, 200);
+    }
+    function hideResetOverlay() {
+      gel("resetOverlay").classList.remove("on");
+    }
+    function doResetPassword() {
+      var name = gel("resetName").value;
+      var dob = gel("resetDob").value.trim();
+      var np = gel("resetNewPass").value;
+      var cp = gel("resetConfirmPass").value;
+      if (!name) { showErr("resetError", "⚠️ Select your name"); return; }
+      if (!dob) { showErr("resetError", "⚠️ Enter your Date of Birth"); return; }
+      if (!np || np.length < 4) { showErr("resetError", "⚠️ Password must be at least 4 characters"); return; }
+      if (np !== cp) { showErr("resetError", "⚠️ Passwords do not match"); return; }
+
+      var btn = gel("resetBtn"); btn.disabled = true; btn.innerHTML = '<span class="spin-sm"></span>Setting…';
+      google.script.run.withSuccessHandler(function (r) {
+        btn.disabled = false; btn.textContent = "🔑 Set Password";
+        if (r.ok) {
+          toast("✅ Password set! You can now log in.", "ok");
+          hideResetOverlay();
+          gel("selFacEntry").value = name; gel("facEntryPass").value = np; onFacNameChange();
+        } else { showErr("resetError", "❌ " + (r.msg || "Failed")); }
+      }).withFailureHandler(function (e) {
+        btn.disabled = false; btn.textContent = "🔑 Set Password"; showErr("resetError", "❌ " + e.message);
+      }).resetFacultyPassword(name, dob, np);
+    }
+
+    /* ════════════════════════════════════════════
+       ADMIN LOGIN (Report only)
+       ════════════════════════════════════════════ */
+    function showAdminLogin() { gel("loginUser").value = "admin"; gel("loginPass").value = ""; gel("loginError").style.display = "none"; gel("loginOverlay").style.display = "flex"; setTimeout(function () { gel("loginUser").focus(); }, 200); }
+    function cancelAdminLogin() { gel("loginOverlay").style.display = "none"; pendingTab = null; pendingBtn = null; }
+    function doAdminLogin() {
+      var u = gel("loginUser").value.trim(), p = gel("loginPass").value.trim();
+      if (!u || !p) { showErr("loginError", "⚠️ Fill both fields"); return; }
+      var btn = gel("loginBtn"); btn.disabled = true; btn.innerHTML = '<span class="spin-sm"></span>Verifying…';
+      google.script.run.withSuccessHandler(function (r) {
+        btn.disabled = false; btn.textContent = "🔓 Login";
+        if (r.ok) { isAdmin = true; gel("loginOverlay").style.display = "none"; gel("adminBadge").style.display = "inline-flex"; document.querySelectorAll(".lock-ico").forEach(function (el) { el.style.display = "none"; }); toast("✅ Admin access", "ok"); if (pendingTab && pendingBtn) goTab(pendingTab, pendingBtn); pendingTab = null; pendingBtn = null; }
+        else { showErr("loginError", "❌ Invalid credentials"); gel("loginPass").value = ""; gel("loginPass").focus(); }
+      }).withFailureHandler(function (e) { btn.disabled = false; btn.textContent = "🔓 Login"; showErr("loginError", "❌ " + e.message); }).verifyAdmin(u, p);
+    }
+    function toggleAdmin() { if (!isAdmin) return; isAdmin = false; gel("adminBadge").style.display = "none"; document.querySelectorAll(".lock-ico").forEach(function (el) { el.style.display = ""; }); goTab("entry", document.querySelector(".tab")); toast("🔒 Admin logged out", "in"); }
+
+    /* ════════════════════════════════════════════
+       ENTRY: STATS (lightweight)
+       ════════════════════════════════════════════ */
+    function loadEntryStats() {
+      refreshFacultyDashboard(gel("entryDate").value);
+    }
+
+    /* ════════════════════════════════════════════
+       ENTRY: DATE CHANGE
+       ════════════════════════════════════════════ */
+    function onEntryDateChange() {
+      var ds = gel("entryDate").value; resetEntry();
+      if (!ds || !loggedFaculty) return;
+      if (isBlocked(ds)) {
+        var reason = blockedDates[ds] || "Sunday — Holiday";
+        gel("noticeBlocked").textContent = "⛔ " + reason + " — entry not allowed.";
+        gel("noticeBlocked").style.display = "block";
+        gel("statusCard").style.display = "none"; gel("btnSubmit").style.display = "none"; return;
+      }
+      gel("statusCard").style.display = ""; gel("btnSubmit").style.display = ""; gel("noticeBlocked").style.display = "none";
+      if (latestFacultyStats && latestFacultyStats.ok && latestFacultyStats.found) {
+        var cachedEntry = findStatsEntry_(latestFacultyStats.entries, ds);
+        if (cachedEntry) {
+          syncSelectedEntryFromStats_(latestFacultyStats, ds);
+          return;
+        }
+      }
+      toast("Loading…", "in");
+      google.script.run.withSuccessHandler(function (r) {
+        if (!r.ok) { toast(r.msg, "er"); return; }
+        if (r.blocked) {
+          /*
+          gel("noticeBlocked").textContent = "⛔ " + (r.reason || "Entry not allowed.");
+          */
+          /*
+          gel("noticeBlocked").textContent = "⛔ " + (r.reason || "Entry not allowed.");
+          */
+          gel("noticeBlocked").textContent = "Blocked: " + (r.reason || "Entry not allowed.");
+          gel("noticeBlocked").style.display = "block";
+          gel("statusCard").style.display = "none"; gel("btnSubmit").style.display = "none";
+          toast(r.reason || "Blocked date", "er");
+          return;
+        }
+        if (!r.found) { toast("No existing entry — fill new", "in"); return; }
+        if (r.status) pickStatus(r.status);
+        ["s0", "s1", "s2", "s3", "s4", "s5", "s6"].forEach(function (k, i) { var el = gel("sl" + i); if (el) el.value = r[k] || ""; });
+        gel("noticeEdit").style.display = "block"; toast("Entry loaded ✓", "ok");
+      }).withFailureHandler(function (e) { toast("Error: " + e.message, "er"); }).getRowData(loggedFaculty, ds);
+    }
+
+    function pickStatus(s) {
+      curStatus = s;
+      gel("btnP").className = "st-btn" + (s === "Present" ? " sp" : "");
+      gel("btnA").className = "st-btn" + (s === "Absent" ? " sa" : "");
+      gel("slotsWrap").style.display = s === "Present" ? "block" : "none";
+      gel("alertAbsent").style.display = s === "Absent" ? "block" : "none";
+    }
+    function resetEntry() {
+      curStatus = ""; gel("btnP").className = "st-btn"; gel("btnA").className = "st-btn";
+      gel("slotsWrap").style.display = "none"; gel("alertAbsent").style.display = "none";
+      gel("noticeEdit").style.display = "none"; gel("noticeBlocked").style.display = "none";
+      gel("statusCard").style.display = ""; gel("btnSubmit").style.display = "";
+      for (var i = 0; i < 7; i++) { var e = gel("sl" + i); if (e) e.value = ""; }
+    }
+
+    /* ════════════════════════════════════════════
+       SUBMIT
+       ════════════════════════════════════════════ */
+    function doSubmit() {
+      if (!loggedFaculty) { toast("Login first", "er"); return; }
+      var ds = gel("entryDate").value;
+      if (!ds) { toast("Select a date", "er"); return; }
+      if (isBlocked(ds)) { toast("⛔ Blocked date", "er"); return; }
+      if (!curStatus) { toast("Select Present or Absent", "er"); return; }
+      var slots = []; for (var i = 0; i < 7; i++) { var el = gel("sl" + i); slots.push(el ? (el.value || '').trim() : ""); }
+      var btn = gel("btnSubmit"); btn.disabled = true; btn.innerHTML = '<span class="spin-sm"></span>Saving…';
+      google.script.run.withSuccessHandler(function (r) {
+        btn.disabled = false; btn.textContent = "Submit Entry";
+        if (r.ok) { toast("✅ Saved for " + fmtDate(ds), "ok"); gel("noticeEdit").style.display = "block"; refreshFacultyDashboard(ds); }
+        else toast("❌ " + r.msg, "er");
+      }).withFailureHandler(function (e) { btn.disabled = false; btn.textContent = "Submit Entry"; toast("❌ " + e.message, "er"); }).saveRow(loggedFaculty, ds, curStatus, slots);
+    }
+
+    /* ════════════════════════════════════════════
+       MY ENTRIES (using getFacultyStats)
+       ════════════════════════════════════════════ */
+    function loadMyEntries() {
+      refreshFacultyDashboard(gel("entryDate").value);
+    }
+    function renderMyEntries(r) {
+      var tb = gel("myEntriesBody"); tb.innerHTML = "";
+      if (!r.ok || !r.found) { tb.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:18px">No entries yet.</td></tr>'; show("myEntriesCard"); return; }
+      // Show all entries up to today (including unfilled "—" entries)
+      var today = todayISO;
+      var entriesToShow = r.entries.filter(function (e) { return e.date <= today; });
+      if (!entriesToShow.length) { tb.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:18px">No entries yet.</td></tr>'; show("myEntriesCard"); return; }
+      var frag = document.createDocumentFragment();
+      entriesToShow.slice().sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; }).reverse().forEach(function (e) {
+        /*
+        var isNotFilled = (e.status === "—");
+        */
+        var isNotFilled = !e.status;
+        var rate = e.status === "Absent" ? 0 : Math.round((e.filled / 7) * 100);
+        var pc = e.status === "Present" ? "pp" : e.status === "Absent" ? "pa" : isNotFilled ? "pw" : "pu";
+        var statusLabel = isNotFilled ? "⚠️ Not Filled" : e.status;
+        var tr = document.createElement("tr");
+        tr.innerHTML = '<td>' + fmtDate(e.date) + ' <span style="color:var(--muted);font-size:.7rem">' + getShortDay(e.date) + '</span></td><td><span class="pill ' + pc + '">' + esc(statusLabel) + '</span></td><td>' + (e.status === "Absent" ? "—" : isNotFilled ? "0/7" : e.filled + '/7') + '</td><td>' + (e.status === "Absent" ? "—" : isNotFilled ? "0%" : rate + '%') + '</td>';
+        tr.style.cursor = "pointer"; tr.title = isNotFilled ? "Click to fill this date" : "Click to edit";
+        (function (dt) { tr.onclick = function () { gel("entryDate").value = dt; onEntryDateChange(); }; })(e.date);
+        frag.appendChild(tr);
+      });
+      tb.appendChild(frag);
+      show("myEntriesCard");
+    }
+
+    /* ════════════════════════════════════════════
+       SPECIAL LEAVES
+       ════════════════════════════════════════════ */
+    function loadSpecialLeaves() { google.script.run.withSuccessHandler(renderSpecialLeaves).withFailureHandler(function () { }).getSpecialLeaves(); }
+    function renderSpecialLeaves(r) {
+      if (!r.ok) return; var tb = gel("leavesBody"); tb.innerHTML = "";
+      if (!r.leaves.length) { hide("leavesTblWrap"); show("noLeavesMsg"); return; }
+      hide("noLeavesMsg"); show("leavesTblWrap");
+      var frag = document.createDocumentFragment();
+      r.leaves.forEach(function (l) {
+        var tr = document.createElement("tr");
+        tr.innerHTML = '<td>' + fmtDate(l.date) + '</td><td>' + getDayName(l.date) + '</td><td>' + esc(l.remarks) + '</td><td><button class="btn-sm" onclick="removeLeave(\'' + l.date + '\')" style="color:var(--red);border-color:var(--red)">🗑️</button></td>';
+        frag.appendChild(tr);
+      });
+      tb.appendChild(frag);
+    }
+    function addLeave() {
+      var ds = gel("leaveDate").value, rm = gel("leaveRemarks").value.trim();
+      if (!ds) { toast("Select a date", "er"); return; } if (!rm) { toast("Enter remarks", "er"); return; }
+      var p = ds.split("-"), d = new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2]));
+      if (d.getDay() === 0) { toast("Already a Sunday", "er"); return; }
+      toast("Adding…", "in");
+      google.script.run.withSuccessHandler(function (r) {
+        if (r.ok) { toast("✅ Leave added", "ok"); gel("leaveDate").value = ""; gel("leaveRemarks").value = ""; loadSpecialLeaves(); refreshBlockedDates(); }
+        else toast("❌ " + r.msg, "er");
+      }).withFailureHandler(function (e) { toast("❌ " + e.message, "er"); }).addSpecialLeave(ds, rm);
+    }
+    function removeLeave(ds) {
+      toast("Removing…", "in");
+      google.script.run.withSuccessHandler(function (r) {
+        if (r.ok) { toast("✅ Removed", "ok"); loadSpecialLeaves(); refreshBlockedDates(); } else toast("❌ " + r.msg, "er");
+      }).withFailureHandler(function (e) { toast("❌ " + e.message, "er"); }).removeSpecialLeave(ds);
+    }
+
+    /* ════════════════════════════════════════════
+       DAILY REPORT
+       ════════════════════════════════════════════ */
+    function loadReport() {
+      var ds = gel("reportDate").value; if (!ds) { toast("Select a date", "er"); return; }
+      toast("Loading report…", "in");
+      google.script.run.withSuccessHandler(renderReport).withFailureHandler(function (e) { toast("❌ " + e.message, "er"); }).getReport(ds);
+    }
+    function renderReport(r) {
+      if (!r.ok) { toast(r.msg, "er"); return; } allRows = r.rows;
+      if (r.isLeave) { gel("repLeaveNotice").textContent = "🏖️ Special Leave: " + r.leaveRemarks; gel("repLeaveNotice").style.display = "block"; }
+      else gel("repLeaveNotice").style.display = "none";
+      gel("stTotal").textContent = r.total; gel("stPresent").textContent = r.present; gel("stAbsent").textContent = r.absent; gel("stNF").textContent = r.notFilled;
+      show("statRow"); show("repToolbar"); show("repTblWrap");
+      applyFilter(curFilter, gel("f" + capFirst(curFilter)));
+      loadReportMissingDaily();
+      toast("Report loaded ✓", "ok");
+    }
+    function loadReportMissingDaily() {
+      if (!isAdmin) return;
+      var dailySection = gel("dailyReportSection");
+      if (!dailySection || dailySection.style.display === "none") return;
+
+      google.script.run.withSuccessHandler(function (r) {
+        if (!r || !r.ok) return;
+        var key = r.date || "";
+        if (key && reportMissingDailyShownFor === key) return;
+        if (key) reportMissingDailyShownFor = key;
+
+        if (r.skipped) return;
+        var names = r.names || [];
+        if (!names.length) {
+          toast("✅ All entries filled for today", "ok");
+          return;
+        }
+        var items = names.map(function (n) { return { name: n, dates: [r.date] }; });
+        var sub = "Missing entries for " + fmtDate(r.date) + " (" + getShortDay(r.date) + ")";
+        showReportMissingPopup("⚠️ Unfilled Today", sub, items);
+      }).withFailureHandler(function () { }).getUnfilledForTodayAfterCutoff();
+    }
+    function showReportMissingPopup(title, sub, items) {
+      var overlay = gel("reportMissingOverlay");
+      if (!overlay) return;
+      reportMissingItems = items || [];
+      reportMissingTitle = title || "";
+      reportMissingSub = sub || "";
+      gel("reportMissingTitle").textContent = title;
+      gel("reportMissingSub").textContent = sub;
+      var ul = gel("reportMissingList");
+      ul.innerHTML = "";
+      var frag = document.createDocumentFragment();
+      (items || []).forEach(function (item) {
+        var name = (typeof item === "string") ? item : (item && item.name) ? item.name : "";
+        var dates = (item && item.dates) ? item.dates : [];
+        var dateText = formatMissingDatesList(dates);
+        if (!dateText && item && item.date) dateText = fmtDate(item.date) + " (" + getShortDay(item.date) + ")";
+        var li = document.createElement("li");
+        var row = '<div class="report-missing-row"><span class="missed-date">' + esc(dateText || "—") + '</span><span class="report-missing-name">' + esc(name) + '</span></div>';
+        li.innerHTML = row;
+        frag.appendChild(li);
+      });
+      ul.appendChild(frag);
+      overlay.classList.add("on");
+    }
+    function dismissReportMissing() {
+      var overlay = gel("reportMissingOverlay");
+      if (overlay) overlay.classList.remove("on");
+    }
+    function loadReportMissingMonthly() {
+      if (!isAdmin) return;
+      var sheetName = gel("moSheetMonth").value || currentSheetName;
+      if (!sheetName) return;
+
+      google.script.run.withSuccessHandler(function (r) {
+        if (!r || !r.ok) return;
+        var key = (r.sheetName || sheetName) + "|" + (r.tillDate || "");
+        if (key && reportMissingMonthlyShownFor === key) return;
+        if (key) reportMissingMonthlyShownFor = key;
+
+        if (r.skipped) {
+          toast(r.reason || "No working days till yesterday", "in");
+          return;
+        }
+        var missing = r.missing || (r.names || []).map(function (n) { return { name: n }; });
+        if (!missing.length) {
+          toast("✅ All entries filled till yesterday", "ok");
+          return;
+        }
+        var sub = "Missing entries up to " + fmtDate(r.tillDate) + " (" + (r.monthLabel || "Selected month") + ")";
+        showReportMissingPopup("⚠️ Unfilled Till Yesterday", sub, missing);
+      }).withFailureHandler(function () { }).getUnfilledTillYesterday(sheetName);
+    }
+    function capFirst(s) { if (s === "all") return "All"; if (s === "present") return "Present"; if (s === "absent") return "Absent"; if (s === "notfill") return "NF"; return "All"; }
+    function applyFilter(f, btn) {
+      curFilter = f; document.querySelectorAll("#repToolbar .btn-sm").forEach(function (b) { b.classList.remove("active-f"); });
+      if (btn) btn.classList.add("active-f");
+      if (f === "present") filtRows = allRows.filter(function (r) { return r.status === "Present"; });
+      else if (f === "absent") filtRows = allRows.filter(function (r) { return r.status === "Absent"; });
+      else if (f === "notfill") filtRows = allRows.filter(function (r) { return r.status !== "Absent" && r.filled < 7; });
+      else filtRows = allRows.slice();
+      var tb = gel("repTblBody"); tb.innerHTML = "";
+      if (!filtRows.length) { tb.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:22px">No records.</td></tr>'; return; }
+      var frag = document.createDocumentFragment();
+      filtRows.forEach(function (row, idx) {
+        var pc = row.status === "Present" ? "pp" : row.status === "Absent" ? "pa" : "pu";
+        // Fill rate: absent rows show 0%
+        var rate = row.status === "Absent" ? 0 : Math.round((row.filled / 7) * 100);
+        var tr = document.createElement("tr");
+        tr.innerHTML = '<td>' + (idx + 1) + '</td><td>' + esc(row.name) + '</td><td><span class="pill ' + pc + '">' + esc(row.status) + '</span></td><td>' + (row.status === "Absent" ? "—" : row.filled + '/7') + '</td><td><div style="display:flex;align-items:center;gap:7px"><div style="flex:1;height:6px;background:var(--surface3);border-radius:999px;overflow:hidden"><div style="height:100%;width:' + rate + '%;background:var(--gold);border-radius:999px"></div></div><span style="font-size:.72rem;color:var(--muted)">' + rate + '%</span></div></td>';
+        frag.appendChild(tr);
+      });
+      tb.appendChild(frag);
+    }
+
+    /* ════════════════════════════════════════════
+       MONTHLY REPORT
+       ════════════════════════════════════════════ */
+    function loadMonthlyReport() {
+      var sheetName = gel("moSheetMonth").value || currentSheetName;
+      if (!sheetName) { toast("Select a month", "er"); return; }
+      var btn = gel("btnLoadMonthly");
+      btn.disabled = true; btn.innerHTML = '<span class="spin-sm"></span>Loading…';
+      show("monthlyLoader");
+      hide("monthlyContent");
+      toast("Loading monthly data…", "in");
+
+      google.script.run.withSuccessHandler(function (r) {
+        btn.disabled = false; btn.textContent = "🔄 Load Monthly Data";
+        hide("monthlyLoader");
+        if (!r.ok) { toast("❌ " + (r.msg || "Failed"), "er"); return; }
+        if (r.sheetName) gel("moSheetMonth").value = r.sheetName;
+        monthlyData = r;
+        renderMonthlyReport(r);
+        show("monthlyContent");
+        loadReportMissingMonthly();
+        toast("✅ Monthly report loaded", "ok");
+      }).withFailureHandler(function (e) {
+        btn.disabled = false; btn.textContent = "🔄 Load Monthly Data";
+        hide("monthlyLoader");
+        toast("❌ " + e.message, "er");
+      }).getMonthlyReport(sheetName);
+    }
+
+    function onMonthlySheetChange() {
+      monthlyData = null;
+      hide("monthlyContent");
+      var tip = gel("moTooltip");
+      if (tip) tip.style.display = "none";
+      if (gel("monthlyReportSection").style.display !== "none") loadMonthlyReport();
+    }
+
+    function renderMonthlyReport(r) {
+      var facs = r.faculties || [], dates = r.dates || [];
+      var wdTotal = r.workingDaysTotal || 0;
+      var wdTillDate = r.workingDaysTillToday || 0;
+      var tip = gel("moTooltip");
+      if (tip) tip.style.display = "none";
+
+      // Stats
+      var totalFac = facs.length;
+      var sumP = 0, sumA = 0, sumFill = 0;
+      facs.forEach(function (f) { sumP += f.present; sumA += f.absent; sumFill += f.fillRate; });
+      gel("moTotal").textContent = totalFac;
+      gel("moWorkDays").textContent = wdTotal;
+      gel("moWorkTillDate").textContent = wdTillDate;
+      gel("moAvgPresent").textContent = totalFac ? Math.round(sumP / totalFac) : 0;
+      gel("moAvgAbsent").textContent = totalFac ? Math.round(sumA / totalFac) : 0;
+      gel("moAvgFill").textContent = (totalFac ? Math.round(sumFill / totalFac) : 0) + "%";
+      if (!facs.length) {
+        gel("moTableWrap").innerHTML = '<p style="text-align:center;padding:30px;color:var(--muted)">No faculty data found.</p>';
+        gel("moSummaryWrap").innerHTML = "";
+        return;
+      }
+
+      // Build table via array join (faster than string concat)
+      var parts = [];
+      parts.push('<table class="mo-tbl" id="moTable"><thead><tr><th class="mo-name">Faculty</th>');
+      var di;
+      for (di = 0; di < dates.length; di++) {
+        var d = dates[di];
+        var cls = d.isSunday ? " sun-col" : d.isLeave ? " leave-col" : "";
+        parts.push('<th class="' + cls + '" title="' + d.date + '">' + d.day + '<br><span style="font-size:.5rem;opacity:.7">' + d.dayName + '</span></th>');
+      }
+      parts.push('<th style="min-width:48px">P</th><th style="min-width:48px">A</th><th style="min-width:54px">Fill%</th></tr></thead><tbody>');
+
+      // Day totals
+      var dayPresent = [];
+      var dayAbsent = [];
+      for (di = 0; di < dates.length; di++) { dayPresent.push(0); dayAbsent.push(0); }
+
+      var fi, dayIdx;
+      for (fi = 0; fi < facs.length; fi++) {
+        var f = facs[fi];
+        parts.push('<tr data-name="' + esc(f.name.toLowerCase()) + '"><td class="mo-name" title="' + esc(f.name) + '">' + esc(f.name) + '</td>');
+        for (dayIdx = 0; dayIdx < f.days.length; dayIdx++) {
+          var day = f.days[dayIdx];
+          if (dates[dayIdx].isSunday) {
+            parts.push('<td class="sun-col">—</td>');
+          } else if (dates[dayIdx].isLeave) {
+            parts.push('<td class="leave-col">🏖️</td>');
+          } else if (day.status === "Present") {
+            dayPresent[dayIdx]++;
+            // Store slot data as data attributes for tooltip
+            var slotData = [];
+            for (var si = 0; si < SLOTS.length; si++) {
+              slotData.push(day.slots && day.slots[si] ? day.slots[si] : "");
+            }
+            if (day.filled >= 7) {
+              // Fully filled — green tick
+              parts.push('<td class="mo-cell-p mo-has-tip" data-day="' + dates[dayIdx].day + '" data-dayname="' + dates[dayIdx].dayName + '" data-slots="' + esc(slotData.join("|")) + '" tabindex="0">✅</td>');
+            } else {
+              // Partially filled — show n/7 in amber
+              parts.push('<td class="mo-cell-partial mo-has-tip" data-day="' + dates[dayIdx].day + '" data-dayname="' + dates[dayIdx].dayName + '" data-slots="' + esc(slotData.join("|")) + '" tabindex="0">' + day.filled + '/7</td>');
+            }
+          } else if (day.status === "Absent") {
+            dayAbsent[dayIdx]++;
+            parts.push('<td class="mo-cell-a">AB</td>');
+          } else {
+            parts.push('<td class="mo-cell-nm">✖</td>');
+          }
+        }
+        var fillColor = f.fillRate >= 80 ? "var(--green)" : f.fillRate >= 50 ? "var(--gold)" : "var(--red)";
+        parts.push('<td style="font-weight:700;color:var(--green)">' + f.present + '</td><td style="font-weight:700;color:var(--red)">' + f.absent + '</td><td style="font-weight:700;color:' + fillColor + '">' + f.fillRate + '%</td></tr>');
+      }
+
+      // Footer totals
+      parts.push('</tbody><tfoot><tr><td class="mo-name">TOTAL</td>');
+      for (di = 0; di < dates.length; di++) {
+        var dd = dates[di];
+        if (dd.isSunday || dd.isLeave) { parts.push('<td class="' + (dd.isSunday ? "sun-col" : "leave-col") + '">—</td>'); }
+        else { parts.push('<td>' + dayPresent[di] + '/' + dayAbsent[di] + '</td>'); }
+      }
+      parts.push('<td>' + Math.round(facs.reduce(function (a, f) { return a + f.present; }, 0)) + '</td>');
+      parts.push('<td>' + Math.round(facs.reduce(function (a, f) { return a + f.absent; }, 0)) + '</td>');
+      parts.push('<td>' + Math.round(facs.reduce(function (a, f) { return a + f.fillRate; }, 0) / facs.length) + '%</td>');
+      parts.push('</tr></tfoot></table>');
+
+      gel("moTableWrap").innerHTML = parts.join("");
+
+      // Attach tooltip events via delegation (much faster than per-cell)
+      setupMonthlyTooltip();
+
+      // ── Faculty Summary Table (Present / Absent / Not Marked / Fill Rate) ──
+      var sparts = [];
+      sparts.push('<table class="summary-tbl"><thead><tr><th>#</th><th>Faculty Name</th><th>Present</th><th>Absent</th><th>Not Marked</th><th>Fill Rate</th></tr></thead><tbody>');
+      for (fi = 0; fi < facs.length; fi++) {
+        var fc = facs[fi];
+        // Not Marked = working days till today - present - absent
+        var notFilled = wdTillDate - fc.present - fc.absent;
+        if (notFilled < 0) notFilled = 0;
+        var pColor = fc.present > 0 ? 'color:var(--green)' : 'color:var(--muted)';
+        var aColor = fc.absent > 0 ? 'color:var(--red)' : 'color:var(--muted)';
+        var nfColor = notFilled > 0 ? 'color:#854d0e' : 'color:var(--muted)';
+        var fillCol = fc.fillRate >= 80 ? 'color:var(--green)' : fc.fillRate >= 50 ? 'color:var(--gold)' : 'color:var(--red)';
+        sparts.push('<tr><td style="color:var(--muted)">' + (fi + 1) + '</td><td style="font-weight:600">' + esc(fc.name) + '</td>');
+        sparts.push('<td class="num" style="' + pColor + '">' + fc.present + '</td>');
+        sparts.push('<td class="num" style="' + aColor + '">' + fc.absent + '</td>');
+        sparts.push('<td class="num" style="' + nfColor + '">' + notFilled + '</td>');
+        sparts.push('<td class="num" style="' + fillCol + '">' + fc.fillRate + '%</td></tr>');
+      }
+      // Footer
+      var totalP = 0, totalA = 0, totalNF = 0;
+      for (fi = 0; fi < facs.length; fi++) {
+        totalP += facs[fi].present; totalA += facs[fi].absent;
+        var nf = wdTillDate - facs[fi].present - facs[fi].absent;
+        totalNF += (nf > 0 ? nf : 0);
+      }
+      var avgFill = Math.round(facs.reduce(function (a, f) { return a + f.fillRate; }, 0) / facs.length);
+      sparts.push('</tbody><tfoot><tr style="background:var(--surface2)"><td></td><td style="font-weight:800;color:var(--gold)">TOTAL</td>');
+      sparts.push('<td class="num" style="color:var(--green);font-weight:800">' + totalP + '</td>');
+      sparts.push('<td class="num" style="color:var(--red);font-weight:800">' + totalA + '</td>');
+      sparts.push('<td class="num" style="color:#854d0e;font-weight:800">' + totalNF + '</td>');
+      sparts.push('<td class="num" style="color:var(--gold);font-weight:800">' + avgFill + '%</td></tr></tfoot></table>');
+      gel("moSummaryWrap").innerHTML = sparts.join("");
+      filterMonthlyTable();
+    }
+
+    /* ── Floating Tooltip (event delegation — no per-cell listeners) ── */
+    function setupMonthlyTooltip() {
+      var wrap = gel("moTableWrap");
+      var tip = gel("moTooltip");
+      if (!wrap || !tip || _moTooltipBound) return;
+      _moTooltipBound = true;
+      var currentCell = null;
+
+      wrap.addEventListener("mouseover", function (e) {
+        var cell = e.target.closest(".mo-has-tip");
+        if (!cell || cell === currentCell) return;
+        currentCell = cell;
+        var dayNum = cell.getAttribute("data-day");
+        var dayName = cell.getAttribute("data-dayname");
+        var slotsStr = cell.getAttribute("data-slots") || "";
+        var slotsArr = slotsStr.split("|");
+
+        var html = '<div class="mo-tip-title">' + dayNum + ' ' + dayName + ' — Slots</div>';
+        for (var i = 0; i < SLOTS.length; i++) {
+          var val = slotsArr[i] || "";
+          html += '<div class="mo-tip-row"><span class="mo-tip-slot">' + SLOTS[i] + '</span>';
+          if (val) html += '<span class="mo-tip-val">' + esc(val) + '</span>';
+          else html += '<span class="mo-tip-empty">—</span>';
+          html += '</div>';
+        }
+        tip.innerHTML = html;
+        tip.style.display = "block";
+
+        // Position near the cell, avoiding viewport overflow
+        positionTooltip(cell, tip);
+      });
+
+      wrap.addEventListener("mouseout", function (e) {
+        var cell = e.target.closest(".mo-has-tip");
+        if (cell === currentCell) {
+          var related = e.relatedTarget;
+          if (related && (related === tip || tip.contains(related))) return;
+          tip.style.display = "none";
+          currentCell = null;
+        }
+      });
+
+      // Touch support for mobile
+      wrap.addEventListener("touchstart", function (e) {
+        var cell = e.target.closest(".mo-has-tip");
+        if (!cell) return;
+        e.preventDefault();
+        // Simulate mouseover
+        var ev = new MouseEvent("mouseover", { bubbles: true });
+        Object.defineProperty(ev, "target", { value: cell });
+        wrap.dispatchEvent(ev);
+        // Auto-hide after 3s
+        setTimeout(function () { tip.style.display = "none"; currentCell = null; }, 3000);
+      }, { passive: false });
+
+      // Focus support for keyboard/accessibility
+      wrap.addEventListener("focusin", function (e) {
+        var cell = e.target.closest(".mo-has-tip");
+        if (cell) {
+          var ev = new MouseEvent("mouseover", { bubbles: true });
+          Object.defineProperty(ev, "target", { value: cell });
+          wrap.dispatchEvent(ev);
+        }
+      });
+      wrap.addEventListener("focusout", function () {
+        tip.style.display = "none"; currentCell = null;
+      });
+    }
+
+    function positionTooltip(cell, tip) {
+      var rect = cell.getBoundingClientRect();
+      var tipW = tip.offsetWidth || 200;
+      var tipH = tip.offsetHeight || 160;
+      var vw = window.innerWidth;
+      var vh = window.innerHeight;
+
+      // Try to show above the cell
+      var top = rect.top - tipH - 8;
+      var left = rect.left + (rect.width / 2) - (tipW / 2);
+
+      // If not enough space above, show below
+      if (top < 4) { top = rect.bottom + 8; }
+      // If below would clip bottom, force above with scroll
+      if (top + tipH > vh - 4) { top = Math.max(4, rect.top - tipH - 8); }
+
+      // Clamp horizontally
+      if (left < 4) left = 4;
+      if (left + tipW > vw - 4) left = vw - tipW - 4;
+
+      tip.style.top = top + "px";
+      tip.style.left = left + "px";
+    }
+
+    /* ── Debounced search ── */
+    function debouncedFilterMonthly() {
+      clearTimeout(_moFilterTmr);
+      _moFilterTmr = setTimeout(filterMonthlyTable, 200);
+    }
+
+    function filterMonthlyTable() {
+      var q = gel("moSearch").value.trim().toLowerCase();
+      var tbl = gel("moTable"); if (!tbl) return;
+      var rows = tbl.querySelectorAll("tbody tr");
+      for (var i = 0; i < rows.length; i++) {
+        var name = rows[i].getAttribute("data-name") || "";
+        rows[i].style.display = (!q || name.indexOf(q) > -1) ? "" : "none";
+      }
+    }
+
+    function exportMonthlySummaryPdf() {
+      var wrap = gel("moSummaryWrap");
+      var table = wrap ? wrap.querySelector("table") : null;
+      if (!table) { toast("Load monthly data first", "er"); return; }
+
+      var printWindow = window.open("", "_blank");
+      if (!printWindow) { toast("Popup blocked. Please allow popups to export PDF.", "er"); return; }
+
+      var monthLabel = monthlyData && monthlyData.monthLabel ? monthlyData.monthLabel : "Monthly";
+      var styles =
+        '<style>' +
+        '@page{size:A4 portrait;margin:8mm;}' +
+        'html,body{margin:0;padding:0;font-family:Arial,sans-serif;color:#111;}' +
+        '.summary-title{font-size:13px;font-weight:700;margin:0 0 8px;text-align:center;}' +
+        '.summary-wrap{width:100%;}' +
+        'table{width:100%;border-collapse:collapse;table-layout:fixed;}' +
+        'th,td{border:1px solid #cbd5e1;padding:4px 6px;font-size:9px;line-height:1.2;text-align:center;}' +
+        'th{background:#f1f5f9;font-weight:700;font-size:9px;}' +
+        'th:nth-child(2),td:nth-child(2){text-align:left;}' +
+        'tr{break-inside:avoid;page-break-inside:avoid;}' +
+        '</style>';
+      var heading = '<div class="summary-title">Faculty Attendance Summary — ' + esc(monthLabel) + '</div>';
+
+      printWindow.document.open();
+      printWindow.document.write('<!DOCTYPE html><html><head><title>Faculty Attendance Summary</title>' + styles + '</head><body><div class="summary-wrap">' + heading + table.outerHTML + '</div></body></html>');
+      printWindow.document.close();
+      printWindow.focus();
+
+      setTimeout(function () {
+        printWindow.print();
+        printWindow.close();
+      }, 250);
+
+      toast("🖨️ Summary PDF opened", "ok");
+    }
+
+    /* ════════════════════════════════════════════
+       WHAT'S NEW POPUP (version-tracked)
+       ════════════════════════════════════════════ */
+    function checkWhatsNew() {
+      if (!appVersion) return;
+      try {
+        var seen = localStorage.getItem("fws_wn_version");
+        if (seen === appVersion) return; // already seen this version
+        // Show after a short delay so login toast finishes
+        setTimeout(function () { gel("whatsNewOverlay").classList.add("on"); }, 800);
+      } catch (ex) { }
+    }
+    function dismissWhatsNew() {
+      gel("whatsNewOverlay").classList.remove("on");
+      try { localStorage.setItem("fws_wn_version", appVersion); } catch (ex) { }
+    }
+
+    /* ════════════════════════════════════════════
+       MISSED DATES REMINDER POPUP
+       ════════════════════════════════════════════ */
+    function checkMissedDates() {
+      if (!loggedFaculty) return;
+      google.script.run.withSuccessHandler(function (r) {
+        if (!r.ok || !r.missed || !r.missed.length) return;
+        showMissedPopup(r.missed);
+      }).withFailureHandler(function () { }).getMissedDates(loggedFaculty);
+    }
+    function showMissedPopup(missed) {
+      var ul = gel("missedDatesList");
+      ul.innerHTML = "";
+      var frag = document.createDocumentFragment();
+      missed.forEach(function (m) {
+        var li = document.createElement("li");
+        li.innerHTML = '<span class="missed-date">' + fmtDate(m.date) + '</span><span class="missed-day">' + getShortDay(m.date) + '</span><span class="missed-action">Fill Now →</span>';
+        (function (dt) {
+          li.onclick = function () {
+            dismissMissed();
+            gel("entryDate").value = dt;
+            onEntryDateChange();
+          };
+        })(m.date);
+        frag.appendChild(li);
+      });
+      ul.appendChild(frag);
+      // Show after What's New closes (or immediately if already closed)
+      var delay = gel("whatsNewOverlay").classList.contains("on") ? 0 : 600;
+      // If What's New is showing, wait for it to be dismissed — use a polling approach
+      var checker = setInterval(function () {
+        if (!gel("whatsNewOverlay").classList.contains("on")) {
+          clearInterval(checker);
+          setTimeout(function () { gel("missedOverlay").classList.add("on"); }, 400);
+        }
+      }, 300);
+      // Safety: stop checking after 30 seconds
+      setTimeout(function () { clearInterval(checker); }, 30000);
+    }
+    function dismissMissed() {
+      gel("missedOverlay").classList.remove("on");
+    }
+
+    /* ════════════════════════════════════════════
+       FEEDBACK
+       ════════════════════════════════════════════ */
+    function submitFeedback() {
+      if (!loggedFaculty) { toast("Please login first", "er"); return; }
+      var text = gel("feedbackText").value.trim();
+      if (!text) { toast("Please write your feedback", "er"); gel("feedbackText").focus(); return; }
+
+      var btn = gel("fbSubmitBtn");
+      btn.disabled = true; btn.innerHTML = '<span class="spin-sm"></span>Sending…';
+
+      google.script.run.withSuccessHandler(function (r) {
+        btn.disabled = false; btn.textContent = "📨 Send Feedback";
+        if (r.ok) {
+          gel("feedbackText").value = "";
+          gel("fbCharCount").textContent = "0 / 1000";
+          gel("fbSuccess").style.display = "block";
+          setTimeout(function () { gel("fbSuccess").style.display = "none"; }, 5000);
+          toast("✅ Feedback submitted!", "ok");
+        } else {
+          toast("❌ " + (r.msg || "Failed to send"), "er");
+        }
+      }).withFailureHandler(function (e) {
+        btn.disabled = false; btn.textContent = "📨 Send Feedback";
+        toast("❌ " + e.message, "er");
+      }).saveFeedback(loggedFaculty, text);
+    }
+
+    /* ════════════════════════════════════════════
+       TOAST
+       ════════════════════════════════════════════ */
+    function toast(msg, type) { var t = gel("toast"); clearTimeout(toastTmr); t.textContent = msg; t.className = "show " + (type || "in"); toastTmr = setTimeout(function () { t.className = (type || "in"); }, 3200); }
+  </script>
+</body>
+
+</html>
