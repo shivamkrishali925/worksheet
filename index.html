@@ -4491,6 +4491,13 @@
     ];
     var DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     var SHORT_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    // Tooltip configuration constants
+    var ZOOM_TOOLTIP_MAX_WIDTH = 450;
+    var ZOOM_TOOLTIP_DEFAULT_WIDTH = 400;
+    var TOOLTIP_AUTO_HIDE_DELAY = 5000;
+    var TOOLTIP_VIEWPORT_PADDING = 12;
+    var TOOLTIP_HORIZONTAL_OFFSET = 16;
+    var TOOLTIP_VERTICAL_OFFSET = 20;
     var curStatus = "", allRows = [], filtRows = [], toastTmr;
     var curFilter = "all";
     var isAdmin = false, loggedFaculty = null, pendingTab = null, pendingBtn = null;
@@ -5508,8 +5515,8 @@
         var ev = new MouseEvent("mouseover", { bubbles: true });
         Object.defineProperty(ev, "target", { value: cell });
         wrap.dispatchEvent(ev);
-        // Auto-hide after 5s
-        setTimeout(function () { hideZoomTooltip(); tip.style.display = "none"; currentCell = null; _moZoomCell = null; }, 5000);
+        // Auto-hide tooltip after delay
+        setTimeout(function () { hideZoomTooltip(); tip.style.display = "none"; currentCell = null; _moZoomCell = null; }, TOOLTIP_AUTO_HIDE_DELAY);
       }, { passive: false });
 
       // Focus support for keyboard/accessibility
@@ -5568,22 +5575,19 @@
 
     function positionZoomTooltip(cell, zoomTip) {
       var rect = cell.getBoundingClientRect();
-      // Max-width is 450px, fallback default width is 400px
-      var maxTooltipWidth = 450;
-      var defaultTooltipWidth = 400;
-      var tipW = Math.min(maxTooltipWidth, zoomTip.offsetWidth || defaultTooltipWidth);
+      var tipW = Math.min(ZOOM_TOOLTIP_MAX_WIDTH, zoomTip.offsetWidth || ZOOM_TOOLTIP_DEFAULT_WIDTH);
       var tipH = zoomTip.offsetHeight || 300;
       var vw = window.innerWidth;
       var vh = window.innerHeight;
-      var padding = 12;
+      var padding = TOOLTIP_VIEWPORT_PADDING;
 
       // Preferred: show to the right of the cell
-      var left = rect.right + 16;
-      var top = rect.top - 20;
+      var left = rect.right + TOOLTIP_HORIZONTAL_OFFSET;
+      var top = rect.top - TOOLTIP_VERTICAL_OFFSET;
 
       // If not enough space on the right, show on the left
       if (left + tipW + padding > vw) {
-        left = Math.max(padding, rect.left - tipW - 16);
+        left = Math.max(padding, rect.left - tipW - TOOLTIP_HORIZONTAL_OFFSET);
       }
 
       // Clamp top and bottom
@@ -5596,7 +5600,7 @@
 
       zoomTip.style.top = top + "px";
       zoomTip.style.left = left + "px";
-      zoomTip.style.maxWidth = Math.min(maxTooltipWidth, vw - 24) + "px";
+      zoomTip.style.maxWidth = Math.min(ZOOM_TOOLTIP_MAX_WIDTH, vw - 24) + "px";
     }
 
 
