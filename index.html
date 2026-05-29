@@ -1380,6 +1380,15 @@
       background: var(--red)
     }
 
+    .mo-zoom-indicator.partial {
+      background: var(--orange)
+    }
+
+    .mo-zoom-indicator-small {
+      width: 6px !important;
+      height: 6px !important
+    }
+
     .mo-zoom-body {
       padding: 16px 20px;
       max-height: 400px;
@@ -5438,7 +5447,7 @@
               '<div class="mo-zoom-activity-content">' +
               '<div class="mo-zoom-activity-time">' + detail.time + '</div>' +
               '<div class="mo-zoom-activity-title">' + esc(detail.task) + '</div>' +
-              '<div class="mo-zoom-activity-status"><span class="mo-zoom-indicator" style="width: 6px; height: 6px;"></span>✓ ' + esc(slotValue) + '</div>' +
+              '<div class="mo-zoom-activity-status"><span class="mo-zoom-indicator mo-zoom-indicator-small"></span>✓ ' + esc(slotValue) + '</div>' +
               '</div>' +
               '</div>';
           }
@@ -5490,11 +5499,6 @@
         _moZoomCell = null;
       });
 
-      // Keep tooltip visible when hovering over it
-      zoomTip.addEventListener("mouseover", function () {
-        // Keep it visible
-      });
-
       // Touch support for mobile
       wrap.addEventListener("touchstart", function (e) {
         var cell = e.target.closest(".mo-has-tip");
@@ -5505,7 +5509,7 @@
         Object.defineProperty(ev, "target", { value: cell });
         wrap.dispatchEvent(ev);
         // Auto-hide after 5s
-        setTimeout(function () { hideZoomTooltip(); tip.style.display = "none"; currentCell = null; }, 5000);
+        setTimeout(function () { hideZoomTooltip(); tip.style.display = "none"; currentCell = null; _moZoomCell = null; }, 5000);
       }, { passive: false });
 
       // Focus support for keyboard/accessibility
@@ -5564,7 +5568,10 @@
 
     function positionZoomTooltip(cell, zoomTip) {
       var rect = cell.getBoundingClientRect();
-      var tipW = Math.min(450, zoomTip.offsetWidth || 400);
+      // Max-width is 450px, fallback default width is 400px
+      var maxTooltipWidth = 450;
+      var defaultTooltipWidth = 400;
+      var tipW = Math.min(maxTooltipWidth, zoomTip.offsetWidth || defaultTooltipWidth);
       var tipH = zoomTip.offsetHeight || 300;
       var vw = window.innerWidth;
       var vh = window.innerHeight;
@@ -5589,7 +5596,7 @@
 
       zoomTip.style.top = top + "px";
       zoomTip.style.left = left + "px";
-      zoomTip.style.maxWidth = Math.min(450, vw - 24) + "px";
+      zoomTip.style.maxWidth = Math.min(maxTooltipWidth, vw - 24) + "px";
     }
 
 
