@@ -1250,6 +1250,218 @@
       font-style: italic
     }
 
+    /* ── Hover-to-Zoom Enhanced Tooltip ── */
+    .mo-cell-zoom-wrapper {
+      position: relative;
+      z-index: 1
+    }
+
+    .mo-cell-zoom {
+      transition: transform 200ms cubic-bezier(.34, 1.56, .64, 1);
+      transform-origin: center center;
+      cursor: pointer
+    }
+
+    .mo-cell-zoom.zoomed {
+      transform: scale(4);
+      z-index: 999;
+      position: relative
+    }
+
+    #moZoomTooltip {
+      display: none;
+      position: fixed;
+      background: var(--surface);
+      border: none;
+      border-radius: 14px;
+      padding: 0;
+      z-index: 1001;
+      max-width: 450px;
+      box-shadow: 0 12px 48px rgba(0, 0, 0, .15), 0 2px 8px rgba(0, 0, 0, .1);
+      pointer-events: auto;
+      animation: slideInUp 200ms ease-out;
+      white-space: normal;
+      overflow: hidden
+    }
+
+    @keyframes slideInUp {
+      from {
+        opacity: 0;
+        transform: translateY(8px)
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    #moZoomTooltip.show {
+      display: block
+    }
+
+    .mo-zoom-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface2)
+    }
+
+    .mo-zoom-header-title {
+      font-size: .95rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px
+    }
+
+    .mo-zoom-header-date {
+      font-size: .8rem;
+      color: var(--muted)
+    }
+
+    .mo-zoom-stats {
+      display: flex;
+      gap: 12px;
+      padding: 12px 20px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap
+    }
+
+    .mo-zoom-stat {
+      flex: 1;
+      min-width: 100px
+    }
+
+    .mo-zoom-stat-label {
+      font-size: .7rem;
+      color: var(--muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      margin-bottom: 4px
+    }
+
+    .mo-zoom-stat-value {
+      font-size: .95rem;
+      font-weight: 700;
+      color: var(--text)
+    }
+
+    .mo-zoom-stat-value.complete {
+      color: var(--green)
+    }
+
+    .mo-zoom-stat-value.incomplete {
+      color: var(--red)
+    }
+
+    .mo-zoom-stat-value.partial {
+      color: var(--orange)
+    }
+
+    .mo-zoom-completion {
+      display: flex;
+      align-items: center;
+      gap: 6px
+    }
+
+    .mo-zoom-indicator {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green)
+    }
+
+    .mo-zoom-indicator.incomplete {
+      background: var(--red)
+    }
+
+    .mo-zoom-body {
+      padding: 16px 20px;
+      max-height: 400px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch
+    }
+
+    .mo-zoom-section-title {
+      font-size: .75rem;
+      font-weight: 800;
+      color: var(--gold);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: 12px
+    }
+
+    .mo-zoom-activity {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--surface3)
+    }
+
+    .mo-zoom-activity:last-child {
+      border-bottom: none
+    }
+
+    .mo-zoom-activity-icon {
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--surface2);
+      border-radius: 6px;
+      font-size: .8rem;
+      color: var(--gold)
+    }
+
+    .mo-zoom-activity-content {
+      flex: 1;
+      min-width: 0
+    }
+
+    .mo-zoom-activity-time {
+      font-size: .75rem;
+      font-weight: 700;
+      color: var(--gold);
+      margin-bottom: 2px
+    }
+
+    .mo-zoom-activity-title {
+      font-size: .82rem;
+      color: var(--text);
+      font-weight: 600;
+      word-wrap: break-word
+    }
+
+    .mo-zoom-activity-status {
+      font-size: .7rem;
+      color: var(--green);
+      margin-top: 2px;
+      display: flex;
+      align-items: center;
+      gap: 4px
+    }
+
+    .mo-zoom-activity-status.empty {
+      color: var(--muted)
+    }
+
+    .mo-zoom-empty {
+      text-align: center;
+      padding: 20px;
+      color: var(--muted);
+      font-size: .82rem
+    }
+
+    .mo-cell-zoom-popper {
+      position: fixed;
+      pointer-events: none;
+      z-index: 998
+    }
+
     /* ── Toggle Buttons (Daily / Monthly) ── */
     .view-toggle {
       display: flex;
@@ -2828,6 +3040,35 @@
   <!-- Floating tooltip for monthly report -->
   <div id="moTooltip"></div>
 
+  <!-- Enhanced zoom tooltip for monthly report -->
+  <div id="moZoomTooltip">
+    <div class="mo-zoom-header">
+      <div class="mo-zoom-header-title" id="moZoomTitle">—</div>
+      <div class="mo-zoom-header-date" id="moZoomDate">—</div>
+    </div>
+    <div class="mo-zoom-stats">
+      <div class="mo-zoom-stat">
+        <div class="mo-zoom-stat-label">Total Tasks</div>
+        <div class="mo-zoom-stat-value" id="moZoomTasks">0</div>
+      </div>
+      <div class="mo-zoom-stat">
+        <div class="mo-zoom-stat-label">Working Hours</div>
+        <div class="mo-zoom-stat-value" id="moZoomHours">0</div>
+      </div>
+      <div class="mo-zoom-stat">
+        <div class="mo-zoom-stat-label">Status</div>
+        <div class="mo-zoom-stat-value mo-zoom-completion" id="moZoomStatus">
+          <span class="mo-zoom-indicator"></span>
+          <span id="moZoomStatusText">—</span>
+        </div>
+      </div>
+    </div>
+    <div class="mo-zoom-body">
+      <div class="mo-zoom-section-title">📋 Detailed Workload</div>
+      <div id="moZoomActivities"></div>
+    </div>
+  </div>
+
   <!-- WHAT'S NEW OVERLAY -->
   <div class="wn-overlay" id="whatsNewOverlay">
     <div class="wn-card">
@@ -4226,6 +4467,15 @@
        STATE
        ════════════════════════════════════════════ */
     var SLOTS = ["9-10 AM", "10-11 AM", "11-12 PM", "12-1 PM", "2-3 PM", "3-4 PM", "4-5 PM"];
+    var SLOTS_DETAILS = [
+      { time: "9:00-10:00 AM", task: "Attendance in GNM 3rd Year" },
+      { time: "10:00-11:00 AM", task: "Lecture in B.Sc 5th Semester" },
+      { time: "11:00-12:00 PM", task: "Artist Reveal" },
+      { time: "12:00-01:00 PM", task: "Artist Reveal" },
+      { time: "02:00-03:00 PM", task: "Record Work" },
+      { time: "03:00-04:00 PM", task: "Record Work" },
+      { time: "04:00-05:00 PM", task: "Calling Absent Students" }
+    ];
     var DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     var SHORT_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     var curStatus = "", allRows = [], filtRows = [], toastTmr;
@@ -4236,6 +4486,8 @@
     var currentSheetName = "";
     var _moFilterTmr = null;
     var _moTooltipBound = false;
+    var _moZoomCell = null;
+    var _moZoomTooltip = null;
     var appVersion = "";
     var reportMissingDailyShownFor = "";
     var reportMissingMonthlyShownFor = "";
@@ -5044,10 +5296,10 @@
             }
             if (day.filled >= 7) {
               // Fully filled — green tick
-              parts.push('<td class="mo-cell-p mo-has-tip" data-day="' + dates[dayIdx].day + '" data-dayname="' + dates[dayIdx].dayName + '" data-slots="' + esc(slotData.join("|")) + '" tabindex="0">✅</td>');
+              parts.push('<td class="mo-cell-p mo-has-tip" data-faculty="' + esc(f.name) + '" data-date="' + dates[dayIdx].date + '" data-day="' + dates[dayIdx].day + '" data-dayname="' + dates[dayIdx].dayName + '" data-filled="7" data-total="7" data-slots="' + esc(slotData.join("|")) + '" tabindex="0">✅</td>');
             } else {
               // Partially filled — show n/7 in amber
-              parts.push('<td class="mo-cell-partial mo-has-tip" data-day="' + dates[dayIdx].day + '" data-dayname="' + dates[dayIdx].dayName + '" data-slots="' + esc(slotData.join("|")) + '" tabindex="0">' + day.filled + '/7</td>');
+              parts.push('<td class="mo-cell-partial mo-has-tip" data-faculty="' + esc(f.name) + '" data-date="' + dates[dayIdx].date + '" data-day="' + dates[dayIdx].day + '" data-dayname="' + dates[dayIdx].dayName + '" data-filled="' + day.filled + '" data-total="7" data-slots="' + esc(slotData.join("|")) + '" tabindex="0">' + day.filled + '/7</td>');
             }
           } else if (day.status === "Absent") {
             dayAbsent[dayIdx]++;
@@ -5116,7 +5368,8 @@
     function setupMonthlyTooltip() {
       var wrap = gel("moTableWrap");
       var tip = gel("moTooltip");
-      if (!wrap || !tip || _moTooltipBound) return;
+      var zoomTip = gel("moZoomTooltip");
+      if (!wrap || !tip || !zoomTip || _moTooltipBound) return;
       _moTooltipBound = true;
       var currentCell = null;
 
@@ -5124,11 +5377,76 @@
         var cell = e.target.closest(".mo-has-tip");
         if (!cell || cell === currentCell) return;
         currentCell = cell;
-        var dayNum = cell.getAttribute("data-day");
-        var dayName = cell.getAttribute("data-dayname");
+        _moZoomCell = cell;
+
+        // Apply zoom effect to cell
+        cell.classList.add("mo-cell-zoom", "zoomed");
+
+        // Build enhanced zoom tooltip
+        var faculty = cell.getAttribute("data-faculty") || "—";
+        var date = cell.getAttribute("data-date") || "";
+        var dayNum = cell.getAttribute("data-day") || "—";
+        var dayName = cell.getAttribute("data-dayname") || "—";
+        var filled = parseInt(cell.getAttribute("data-filled")) || 0;
+        var total = parseInt(cell.getAttribute("data-total")) || 7;
         var slotsStr = cell.getAttribute("data-slots") || "";
         var slotsArr = slotsStr.split("|");
+        var completionPct = total > 0 ? Math.round((filled / total) * 100) : 0;
+        var isComplete = filled === total;
 
+        // Build header
+        gel("moZoomTitle").textContent = faculty;
+        gel("moZoomDate").textContent = dayNum + " " + dayName + ", " + date;
+
+        // Build stats
+        gel("moZoomTasks").textContent = filled + "/" + total;
+        gel("moZoomHours").textContent = filled + "h";
+        var statusElem = gel("moZoomStatus");
+        var statusTextElem = gel("moZoomStatusText");
+        var indicator = statusElem.querySelector(".mo-zoom-indicator");
+        statusTextElem.textContent = completionPct + "%";
+
+        if (isComplete) {
+          indicator.className = "mo-zoom-indicator";
+          statusElem.className = "mo-zoom-stat-value mo-zoom-completion complete";
+        } else if (filled > 0) {
+          indicator.className = "mo-zoom-indicator partial";
+          statusElem.className = "mo-zoom-stat-value mo-zoom-completion partial";
+        } else {
+          indicator.className = "mo-zoom-indicator incomplete";
+          statusElem.className = "mo-zoom-stat-value mo-zoom-completion incomplete";
+        }
+
+        // Build activities list
+        var activitiesHtml = "";
+        var hasActivities = false;
+        for (var i = 0; i < SLOTS_DETAILS.length; i++) {
+          var detail = SLOTS_DETAILS[i];
+          var slotValue = slotsArr[i] || "";
+          if (slotValue) {
+            hasActivities = true;
+            activitiesHtml += '<div class="mo-zoom-activity">' +
+              '<div class="mo-zoom-activity-icon">⏱️</div>' +
+              '<div class="mo-zoom-activity-content">' +
+              '<div class="mo-zoom-activity-time">' + detail.time + '</div>' +
+              '<div class="mo-zoom-activity-title">' + esc(detail.task) + '</div>' +
+              '<div class="mo-zoom-activity-status"><span class="mo-zoom-indicator" style="width: 6px; height: 6px;"></span>✓ ' + esc(slotValue) + '</div>' +
+              '</div>' +
+              '</div>';
+          }
+        }
+
+        if (!hasActivities) {
+          activitiesHtml = '<div class="mo-zoom-empty">No activities recorded for this day.</div>';
+        }
+
+        gel("moZoomActivities").innerHTML = activitiesHtml;
+
+        // Show zoom tooltip
+        zoomTip.classList.add("show");
+        positionZoomTooltip(cell, zoomTip);
+
+        // Also show basic tooltip for backward compatibility
         var html = '<div class="mo-tip-title">' + dayNum + ' ' + dayName + ' — Slots</div>';
         for (var i = 0; i < SLOTS.length; i++) {
           var val = slotsArr[i] || "";
@@ -5139,8 +5457,6 @@
         }
         tip.innerHTML = html;
         tip.style.display = "block";
-
-        // Position near the cell, avoiding viewport overflow
         positionTooltip(cell, tip);
       });
 
@@ -5148,10 +5464,27 @@
         var cell = e.target.closest(".mo-has-tip");
         if (cell === currentCell) {
           var related = e.relatedTarget;
-          if (related && (related === tip || tip.contains(related))) return;
+          if (related && (related === tip || tip.contains(related) || related === zoomTip || zoomTip.contains(related))) return;
+          hideZoomTooltip();
           tip.style.display = "none";
           currentCell = null;
+          _moZoomCell = null;
         }
+      });
+
+      // Handle mouseout from zoom tooltip back to cell or away
+      zoomTip.addEventListener("mouseout", function (e) {
+        var related = e.relatedTarget;
+        if (related && (related === currentCell || currentCell.contains(related))) return;
+        hideZoomTooltip();
+        tip.style.display = "none";
+        currentCell = null;
+        _moZoomCell = null;
+      });
+
+      // Keep tooltip visible when hovering over it
+      zoomTip.addEventListener("mouseover", function () {
+        // Keep it visible
       });
 
       // Touch support for mobile
@@ -5163,8 +5496,8 @@
         var ev = new MouseEvent("mouseover", { bubbles: true });
         Object.defineProperty(ev, "target", { value: cell });
         wrap.dispatchEvent(ev);
-        // Auto-hide after 3s
-        setTimeout(function () { tip.style.display = "none"; currentCell = null; }, 3000);
+        // Auto-hide after 5s
+        setTimeout(function () { hideZoomTooltip(); tip.style.display = "none"; currentCell = null; }, 5000);
       }, { passive: false });
 
       // Focus support for keyboard/accessibility
@@ -5177,9 +5510,22 @@
         }
       });
       wrap.addEventListener("focusout", function () {
-        tip.style.display = "none"; currentCell = null;
+        hideZoomTooltip();
+        tip.style.display = "none";
+        currentCell = null;
+        _moZoomCell = null;
       });
     }
+
+    function hideZoomTooltip() {
+      var zoomTip = gel("moZoomTooltip");
+      if (zoomTip) zoomTip.classList.remove("show");
+      if (_moZoomCell) {
+        _moZoomCell.classList.remove("mo-cell-zoom", "zoomed");
+        _moZoomCell = null;
+      }
+    }
+
 
     function positionTooltip(cell, tip) {
       var rect = cell.getBoundingClientRect();
@@ -5204,6 +5550,37 @@
       tip.style.top = top + "px";
       tip.style.left = left + "px";
     }
+
+    function positionZoomTooltip(cell, zoomTip) {
+      var rect = cell.getBoundingClientRect();
+      var tipW = Math.min(450, zoomTip.offsetWidth || 400);
+      var tipH = zoomTip.offsetHeight || 300;
+      var vw = window.innerWidth;
+      var vh = window.innerHeight;
+      var padding = 12;
+
+      // Preferred: show to the right of the cell
+      var left = rect.right + 16;
+      var top = rect.top - 20;
+
+      // If not enough space on the right, show on the left
+      if (left + tipW + padding > vw) {
+        left = Math.max(padding, rect.left - tipW - 16);
+      }
+
+      // Clamp top and bottom
+      if (top < padding) top = padding;
+      if (top + tipH > vh - padding) top = Math.max(padding, vh - tipH - padding);
+
+      // Clamp horizontally
+      if (left < padding) left = padding;
+      if (left + tipW > vw - padding) left = vw - tipW - padding;
+
+      zoomTip.style.top = top + "px";
+      zoomTip.style.left = left + "px";
+      zoomTip.style.maxWidth = Math.min(450, vw - 24) + "px";
+    }
+
 
     /* ── Debounced search ── */
     function debouncedFilterMonthly() {
