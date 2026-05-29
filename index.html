@@ -1045,6 +1045,10 @@
       position: relative
     }
 
+    .mo-wrap.zoom-active {
+      overflow: visible
+    }
+
     .mo-tbl {
       border-collapse: collapse;
       font-size: .72rem;
@@ -5379,6 +5383,10 @@
         currentCell = cell;
         _moZoomCell = cell;
 
+        // Prevent overflow clipping during zoom
+        var moWrap = gel("moTableWrap");
+        if (moWrap) moWrap.classList.add("zoom-active");
+
         // Apply zoom effect to cell
         cell.classList.add("mo-cell-zoom", "zoomed");
 
@@ -5524,6 +5532,9 @@
         _moZoomCell.classList.remove("mo-cell-zoom", "zoomed");
         _moZoomCell = null;
       }
+      // Restore overflow
+      var moWrap = gel("moTableWrap");
+      if (moWrap) moWrap.classList.remove("zoom-active");
     }
 
 
